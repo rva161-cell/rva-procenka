@@ -85,7 +85,7 @@
   .markup .ok{color:var(--good,#5bd17a);font-size:12px;display:none}
   .markup .ok.show{display:inline}
   /* «Мои поставщики» — список по алфавиту, галочка слева = опрашивается у незарегистрированных */
-  .suplist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:6px}
+  .suplist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:auto;margin-top:6px;max-height:calc(100vh - 300px)}
   .suprow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
   .suprow:last-child{border-bottom:0}
   .suprow.off{opacity:.55}
@@ -165,7 +165,7 @@
   .cartbtn:hover{border-color:var(--accent);background:rgba(255,140,26,.08)}
   .cartbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   /* «Проверенные поставщики» */
-  .verlist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:6px}
+  .verlist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:auto;margin-top:6px;max-height:calc(100vh - 300px)}
   .verlist a{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--panel);color:var(--text);text-decoration:none}
   .verlist a:last-child{border-bottom:0}
   .verlist a:hover{background:rgba(255,140,26,.07)}
@@ -430,22 +430,26 @@
 <!-- ======== добавление поставщика ======== -->
 <div class="overlay" id="ov-verified">
   <div class="modal wide">
-    <h3>Проверенные поставщики</h3>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <h3 style="margin:0">Проверенные поставщики</h3>
+      <button class="btn btn-ghost" onclick="closeModal()">Закрыть</button>
+    </div>
     <div class="sub">Подключение к этим поставщикам проверено — проценка по ним работает. Ссылка ведёт на главную страницу магазина: зарегистрируйтесь там или войдите в свой кабинет, а затем подключите поставщика у себя. Список постоянно пополняется.</div>
     <div class="verlist" id="verList">Загрузка…</div>
-    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Закрыть</button></div>
   </div>
 </div>
 
 <div class="overlay" id="ov-sups">
   <div class="modal wide">
-    <h3>Мои поставщики</h3>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <h3 style="margin:0">Мои поставщики</h3>
+      <span style="display:flex;gap:10px">
+        <button class="btn btn-acc full-only" onclick="openSupForm()">+ Добавить поставщика</button>
+        <button class="btn btn-ghost" onclick="closeModal()">Закрыть</button>
+      </span>
+    </div>
     <div class="sub" id="supsSub">По ним идёт проценка.</div>
     <div class="suplist" id="sups"></div>
-    <div class="row">
-      <button class="btn btn-ghost" onclick="closeModal()">Закрыть</button>
-      <button class="btn btn-acc full-only" onclick="openSupForm()">+ Добавить поставщика</button>
-    </div>
   </div>
 </div>
 
