@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Автоматизация бизнес-процессов с помощью ИИ — ГСМ-ЭКСПЕРТ</title>
+<style>
+  :root{
+    --bg:#0d1b2a; --bg2:#13263c; --panel:#16293f; --line:#24405d;
+    --steel:#1b3a5c; --accent:#ff8c1a; --accent2:#f77f00;
+    --text:#e9eff6; --muted:#9db0c4;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 24px}
+  header{border-bottom:1px solid var(--line);background:rgba(13,27,42,.97)}
+  .top{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px}
+  .logo-img{width:40px;height:40px;border-radius:8px;display:block}
+  .back{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:700;font-size:13.5px;color:var(--text);text-decoration:none;transition:.2s}
+  .back:hover{border-color:var(--accent);color:var(--accent)}
+  h1{font-size:30px;line-height:1.25;margin:26px 0 6px}
+  h1 em{color:var(--accent);font-style:italic}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:22px}
+
+  /* окно: слайд-шоу слева, текст справа */
+  .box{display:grid;grid-template-columns:1.15fr 1fr;gap:26px;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:24px;margin-bottom:26px;box-shadow:0 14px 34px rgba(0,0,0,.4)}
+  .show{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#0a1622;min-height:420px}
+  .show img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity .7s}
+  .show img.on{opacity:1}
+  .shownav{position:absolute;inset:auto 0 0 0;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:linear-gradient(rgba(10,22,34,0),rgba(10,22,34,.85));z-index:3}
+  .shownav button{background:rgba(22,41,63,.9);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+  .shownav button:hover{border-color:var(--accent);color:var(--accent)}
+  .counter{color:var(--muted);font-size:12.5px}
+  .caption{position:absolute;top:12px;left:12px;z-index:3;background:rgba(10,22,34,.85);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--muted)}
+
+  .casek{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.14em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 12px;margin-bottom:10px}
+  .badge{display:inline-block;vertical-align:middle;font-size:12px;font-weight:800;background:#3d3320;border:1px solid #8a7330;color:#ffd98a;border-radius:999px;padding:4px 12px;margin-left:10px}
+  .caseh{font-size:24px;margin:0 0 6px}
+  .txt .lead{font-size:17px;font-weight:700;line-height:1.55;color:#ffd9ae;padding-bottom:14px;border-bottom:1px dashed var(--line);margin-bottom:16px}
+  .txt .lead b{color:var(--accent)}
+  .block{margin-bottom:15px}
+  .block h4{font-size:13.5px;font-weight:800;color:var(--accent);margin-bottom:4px}
+  .block p{font-size:13.5px;color:#cdd9e6}
+  .cta{display:inline-block;margin-top:6px;background:var(--accent);color:#12100c;font-weight:800;font-size:14px;border-radius:8px;padding:12px 22px;text-decoration:none;box-shadow:0 0 24px rgba(255,140,26,.4)}
+  .cta:hover{background:#ffa047}
+
+  footer{border-top:1px solid var(--line);padding:22px 0;color:var(--muted);font-size:12.5px}
+  @media(max-width:900px){.box{grid-template-columns:1fr}.show{min-height:300px}}
+</style>
+</head>
+<body>
+<header><div class="wrap top">
+  <div class="logo"><img class="logo-img" src="/logo.png" alt="RVA161">ГСМ-ЭКСПЕРТ · Автоматизация с ИИ</div>
+  <a class="back" href="/">← На главную страницу</a>
+</div></header>
+
+<main class="wrap">
+  <h1>Автоматизация бизнес-процессов с помощью ИИ — <em>сделано, а не обещано</em></h1>
+  <div class="sub">Портфолио живых внедрений: проценка по артикулу, боты в мессенджерах и сайт-витрина работают каждый день. Органайзер — на тестировании.</div>
+
+  <div class="box">
+    <div class="show" id="show1" aria-label="Проценка: живая выдача и первая версия">
+      <span class="caption" id="cap1"></span>
+      <div class="shownav">
+        <button type="button" onclick="step('s1',-1)">← Назад</button>
+        <span class="counter" id="cnt1"></span>
+        <button type="button" onclick="step('s1',1)">Вперёд →</button>
+      </div>
+    </div>
+    <div class="txt">
+      <span class="casek">КЕЙС 1</span>
+      <h2 class="caseh">💰 Проценка запасных частей</h2>
+      <div class="lead">Один артикул — таблица предложений от всех поставщиков: цена, срок, наличие и аналоги, отсортировано по возрастанию цены.</div>
+      <div class="block">
+        <h4>⚡ Как это работает</h4>
+        <p>Вводите артикул — система параллельно опрашивает всех подключённых поставщиков и через секунды показывает выдачу. Ответы кэшируются: повторные запросы — мгновенно и без траты квот поставщиков.</p>
+      </div>
+      <div class="block">
+        <h4>📄 Список на ТО — одним файлом</h4>
+        <p>Массовая загрузка артикулов (XLS/CSV): 20–50 позиций — один общий отчёт с лучшими ценами и сроками.</p>
+      </div>
+      <div class="block">
+        <h4>🔓 Попробовать вживую</h4>
+        <p>Гостевой демо-доступ открыт на <a href="/poisk" style="color:var(--accent)">rva161.ru/poisk</a> — поиск по любому артикулу, первые 10 предложений с розничными ценами.</p>
+      </div>
+      <div class="block">
+        <h4>🛠 Сделано и доработано</h4>
+        <p>Второй кадр — первая версия (опрос сайта поставщика через браузер и ИИ). Сейчас поставщики подключены напрямую: быстрее, стабильнее и без лимитов.</p>
+      </div>
+
+    </div>
+  </div>
+  <div class="box">
+    <div class="show" id="show2" aria-label="Боты в мессенджерах: чат и голосовые">
+      <span class="caption" id="cap2"></span>
+      <div class="shownav">
+        <button type="button" onclick="step('s2',-1)">← Назад</button>
+        <span class="counter" id="cnt2"></span>
+        <button type="button" onclick="step('s2',1)">Вперёд →</button>
+      </div>
+    </div>
+    <div class="txt">
+      <span class="casek">КЕЙС 2</span>
+      <h2 class="caseh">🤖 Боты в MAX и Telegram</h2>
+      <div class="lead">Клиенты заказывают запчасти по фотографии — круглосуточно, без звонков и ожидания менеджера.</div>
+      <div class="block">
+        <h4>📸 Заказ по фото</h4>
+        <p>Клиент присылает снимок детали — ИИ распознаёт бренд, продукт и коды, бот проверяет артикул по проценке и подтверждает заказ.</p>
+      </div>
+      <div class="block">
+        <h4>🎙 Голосовые сообщения</h4>
+        <p>Голос распознаётся локальной моделью whisper — бот понимает голосовые заявки так же, как текст.</p>
+      </div>
+      <div class="block">
+        <h4>📰 Новости — с телефона</h4>
+        <p>Лента новостей магазина обновляется прямо из бота: одна запись — и она уже на сайте.</p>
+      </div>
+
+    </div>
+  </div>
+  <div class="box">
+    <div class="show" id="show3" aria-label="Сайт-витрина: текущая версия и история доработок">
+      <span class="caption" id="cap3"></span>
+      <div class="shownav">
+        <button type="button" onclick="step('s3',-1)">← Назад</button>
+        <span class="counter" id="cnt3"></span>
+        <button type="button" onclick="step('s3',1)">Вперёд →</button>
+      </div>
+    </div>
+    <div class="txt">
+      <span class="casek">КЕЙС 3</span>
+      <h2 class="caseh">🛒 Сайт-витрина с лентой новостей</h2>
+      <div class="lead">Продаёт без выходных: бегущие окна с предложениями, лента новостей, витрина услуг и разделы для предприятий и частных владельцев.</div>
+      <div class="block">
+        <h4>📰 Лента новостей</h4>
+        <p>Новости, акции и поступления публикуются с телефона за минуту — и сразу видны посетителям на главной.</p>
+      </div>
+      <div class="block">
+        <h4>🎨 Всё написано своими руками</h4>
+        <p>Ни одного шаблона: дизайн, сервер и боты написаны под свои задачи. Последние кадры — путь от первых версий до сегодняшней.</p>
+      </div>
+
+    </div>
+  </div>
+  <div class="box">
+    <div class="show" id="show4" aria-label="Органайзер: задачи, календарь, сканы">
+      <span class="caption" id="cap4"></span>
+      <div class="shownav">
+        <button type="button" onclick="step('s4',-1)">← Назад</button>
+        <span class="counter" id="cnt4"></span>
+        <button type="button" onclick="step('s4',1)">Вперёд →</button>
+      </div>
+    </div>
+    <div class="txt">
+      <span class="casek">КЕЙС 4</span>
+      <h2 class="caseh">🗓 Органайзер руководителя<span class="badge">🧪 тестируется</span></h2>
+      <div class="lead">Задачи, календарь, почта и документы — в телефоне и на компьютере. Блок в финальной проверке: покажу в работе после теста.</div>
+      <div class="block">
+        <h4>✅ Задачи и календарь</h4>
+        <p>Получасовые слоты календаря, задачи дня и просроченные — всегда на виду, выполненные не теряются.</p>
+      </div>
+      <div class="block">
+        <h4>📧 Почта и заявки от бота</h4>
+        <p>Входящие письма и заказы-заявки от бота пользователя автоматически попадают в календарь для выполнения.</p>
+      </div>
+      <div class="block">
+        <h4>📎 Сканы и документы</h4>
+        <p>Сканы со смартфона собираются в задачи и книжки, выгружаются на Яндекс.Диск.</p>
+      </div>
+
+      <a class="cta" href="/#contacts">Обсудить автоматизацию для вашего предприятия</a>
+    </div>
+  </div>
+</main>
+
+<footer><div class="wrap">ИП Редькин Владимир Анатольевич · ИНН 616101960804 · ОГРНИП 317619600033223 · info@vredkin.ru · 8-928-279-72-07</div></footer>
+
+<script>
+"use strict";
+const SHOWS = {
+  s1: { el: "show1", cap: "cap1", cnt: "cnt1", imgs: [
+    { src: "/portfolio/poisk-01.png", alt: "Живая выдача: MAHLE OC90 — цены, сроки, наличие" },
+    { src: "/portfolio/auto-06.png", alt: "Первая версия — проценка через браузер и ИИ" } ] },
+  s2: { el: "show2", cap: "cap2", cnt: "cnt2", imgs: [
+    { src: "/portfolio/auto-13.png", alt: "Боты в MAX и Telegram" },
+    { src: "/portfolio/auto-05.png", alt: "Голосовые сообщения через whisper" } ] },
+  s3: { el: "show3", cap: "cap3", cnt: "cnt3", imgs: [
+    { src: "/portfolio/auto-08.png", alt: "Бегущие окна — текущая версия" },
+    { src: "/portfolio/auto-07.png", alt: "Лента новостей на главной" },
+    { src: "/portfolio/auto-09.png", alt: "Раздел «Услуги»" },
+    { src: "/portfolio/auto-10.png", alt: "Раздел «Почему независимый эксперт»" },
+    { src: "/portfolio/auto-11.png", alt: "Раздел «Отраслям»" },
+    { src: "/portfolio/auto-12.png", alt: "Раздел «Обо мне»" },
+    { src: "/portfolio/auto-14.png", alt: "Реквизиты и контакты" },
+    { src: "/portfolio/auto-03.png", alt: "История: первый коммит" },
+    { src: "/portfolio/auto-02.png", alt: "История: развитие идеи" },
+    { src: "/portfolio/auto-01.png", alt: "История: первый дизайн" } ] },
+  s4: { el: "show4", cap: "cap4", cnt: "cnt4", imgs: [
+    { src: "/portfolio/auto-04.png", alt: "Органайзер — этап разработки" } ] }
+};
+const state = {};
+for (const key in SHOWS) {
+  const cfg = SHOWS[key], show = document.getElementById(cfg.el), imgs = [];
+  for (const it of cfg.imgs) {
+    const im = new Image();
+    im.src = it.src; im.alt = it.alt;
+    show.insertBefore(im, show.firstChild);
+    imgs.push(im);
+  }
+  state[key] = { imgs, cur: 0, timer: null };
+  if (imgs.length < 2) show.querySelector(".shownav").style.display = "none";
+  paint(key); restart(key);
+}
+function paint(key) {
+  const st = state[key];
+  st.imgs.forEach((im, i) => im.classList.toggle("on", i === st.cur));
+  document.getElementById(SHOWS[key].cnt).textContent = (st.cur + 1) + " / " + st.imgs.length;
+  document.getElementById(SHOWS[key].cap).textContent = st.imgs[st.cur].alt;
+}
+function step(key, d) {
+  const st = state[key];
+  st.cur = (st.cur + d + st.imgs.length) % st.imgs.length;
+  paint(key); restart(key);
+}
+function restart(key) {
+  const st = state[key];
+  clearInterval(st.timer);
+  if (st.imgs.length > 1) st.timer = setInterval(() => { st.cur = (st.cur + 1) % st.imgs.length; paint(key); }, 3000);
+}
+for (const key in SHOWS) {
+  const show = document.getElementById(SHOWS[key].el);
+  show.addEventListener("mouseenter", () => clearInterval(state[key].timer));
+  show.addEventListener("mouseleave", () => restart(key));
+}
+</script>
+</body>
+</html>

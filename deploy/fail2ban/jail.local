@@ -1,0 +1,32 @@
+# RVA — блокировка подбора паролей. Посмотреть: sudo fail2ban-client status <имя>
+# Разблокировать адрес: sudo fail2ban-client set <имя> unbanip 1.2.3.4
+[DEFAULT]
+bantime  = 1h
+findtime = 10m
+maxretry = 5
+# свои адреса, которые никогда не блокировать (через пробел), например: 127.0.0.1/8 ::1 ВАШ_IP
+ignoreip = 127.0.0.1/8 ::1
+
+[sshd]
+enabled  = true
+backend  = systemd
+maxretry = 4
+bantime  = 24h
+
+# неверный второй пароль nginx (служебные разделы)
+[nginx-http-auth]
+enabled  = true
+logpath  = /var/log/nginx/rva.error.log
+
+# слишком частые запросы (сработал limit_req в nginx)
+[nginx-limit-req]
+enabled  = true
+logpath  = /var/log/nginx/rva.error.log
+maxretry = 20
+
+# перебор пароля при входе в программу (ответ 401 на /api/auth/login)
+[rva-login]
+enabled  = true
+filter   = rva-login
+logpath  = /var/log/nginx/rva.access.log
+maxretry = 10

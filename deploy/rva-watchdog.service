@@ -1,0 +1,6 @@
+[Unit]
+Description=RVA — сторож служб: раз в минуту, авто-рестарт + отчёт директору в MAX
+
+[Service]
+Type=oneshot
+ExecStart=/opt/rva/deploy/watchdog.sh

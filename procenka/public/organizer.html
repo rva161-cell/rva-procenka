@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Органайзер — RVA</title>
+<link rel="manifest" href="/organizer.webmanifest">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="theme-color" content="#0d1b2a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Органайзер">
+<style>
+  :root{
+    --bg:#0d1b2a; --bg2:#13263c; --panel:#16293f; --line:#24405d;
+    --steel:#1b3a5c; --accent:#ff8c1a; --accent2:#f77f00;
+    --text:#e9eff6; --muted:#9db0c4;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 20px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:8px;font-weight:700;font-size:13.5px;cursor:pointer;border:0;transition:.2s;font-family:inherit}
+  .btn-acc{background:var(--accent);color:#12100c}
+  .btn-acc:hover{background:#ffa047}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-sm{padding:5px 10px;font-size:12px;border-radius:7px}
+
+  header{position:sticky;top:0;z-index:50;background:rgba(13,27,42,.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;gap:12px;min-height:60px;flex-wrap:wrap;padding:8px 0}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;white-space:nowrap}
+  .logo-badge{width:34px;height:34px;background:linear-gradient(135deg,var(--accent2),#ffb566);border-radius:8px;display:grid;place-items:center;color:#0d1b2a;font-size:13px;font-weight:900}
+  .tabs{display:flex;gap:6px;flex-wrap:wrap}
+  .tab{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:7px 13px;font-size:13px;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap}
+  .tab:hover{border-color:var(--accent);color:var(--accent)}
+  .tab.on{background:rgba(255,140,26,.14);border-color:var(--accent);color:var(--accent);font-weight:700}
+  .tab .n{font-size:11px;background:rgba(255,140,26,.2);border-radius:999px;padding:0 7px;margin-left:4px;display:inline-block;min-width:20px;text-align:center;visibility:hidden}
+  .tab .n.vis{visibility:visible}
+  .nav .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+  main{padding:20px 0 60px}
+  .bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .bar h2{font-size:20px}
+  .bar .cnt{color:var(--muted);font-size:13px}
+  .bar .calnav{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .caldate{font-size:14px;font-weight:700;min-width:190px;text-align:center}
+
+  .task{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+  .task .ck{padding-top:3px}
+  .task input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+  .task .t{cursor:pointer;flex:1;min-width:0}
+  .task .t b{display:block;font-size:14.5px;font-weight:600;word-break:break-word}
+  .task .t.done b{text-decoration:line-through;color:var(--muted)}
+  .task .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;align-items:center}
+  .badge{font-size:10.5px;font-weight:700;letter-spacing:.05em;border:1px solid var(--line);border-radius:999px;padding:1px 9px;color:var(--muted);white-space:nowrap}
+  .badge.src{color:#7fb3ff;border-color:#2c4a6e}
+  .badge.carry{color:#ffd479;border-color:#6e5a2c}
+  .badge.time{color:var(--accent);border-color:rgba(255,140,26,.4)}
+  .task .bodytxt{color:var(--muted);font-size:12.5px;margin-top:4px;white-space:pre-wrap;word-break:break-word;max-height:80px;overflow:hidden}
+  .task .restore{margin-left:auto;padding-top:2px}
+  .cta{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--steel);background:#dfe9f4;border-radius:7px;padding:3px 8px;margin-top:7px;margin-right:6px;text-decoration:none;font-weight:700}
+  .cta:hover{background:var(--accent);color:#12100c}
+
+  /* календарь */
+  .daycol{background:var(--bg2);border:1px solid var(--line);border-radius:10px;min-height:120px;padding:8px}
+  .daycol.today{border-color:rgba(255,140,26,.5)}
+  .daycol h4{font-size:12.5px;color:var(--muted);text-align:center;margin-bottom:8px;font-weight:600}
+  .daycol.today h4{color:var(--accent)}
+  .daycol .dropzone{min-height:70px}
+  .daycol.tall{display:flex;flex-direction:column}
+  .daycol.tall .dropzone{flex:1;min-height:58vh}
+  .mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+  .mcell{background:var(--bg2);border:1px solid var(--line);border-radius:9px;min-height:96px;padding:6px;transition:.15s}
+  .mcell.over{border-color:var(--accent);background:rgba(255,140,26,.08)}
+  .mcell .dnum{font-size:12px;color:var(--muted);text-align:right;margin-bottom:4px}
+  .mcell.today{border-color:rgba(255,140,26,.6)}
+  .mcell.today .dnum{color:var(--accent);font-weight:800}
+  .mcell .out{opacity:.35}
+  .minitask{background:var(--steel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:7px;padding:6px 9px;font-size:12px;margin-bottom:6px;cursor:grab;word-break:break-word}
+  .minitask small{color:var(--muted);display:block}
+  .hourrow{display:grid;grid-template-columns:70px 1fr;gap:8px;margin-bottom:6px}
+  .hour{color:var(--muted);font-size:12px;text-align:right;padding:10px 8px 0 0}
+  .slot{background:var(--bg2);border:1px dashed var(--line);border-radius:10px;min-height:44px;padding:6px;transition:.15s}
+  .slot.over{border-color:var(--accent);background:rgba(255,140,26,.08)}
+  .slot.allday{grid-column:1/-1;border-style:solid;min-height:60px}
+  .slotlabel{font-size:10.5px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin:2px 0 4px 4px}
+  /* день: задачи поверх сетки — длинная задача одним полем, низ растягивается мышью */
+  .daygrid{position:relative}
+  .daygrid .hourrow{margin-bottom:0}
+  .daygrid .slot{height:46px;min-height:0;overflow:hidden}
+  .spanblock{position:absolute;background:var(--steel);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:7px;padding:5px 9px 11px;font-size:12px;word-break:break-word;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.22);cursor:grab;z-index:2}
+  .spanblock small{color:var(--muted);display:block}
+  .spanblock .rsz{position:absolute;left:0;right:0;bottom:0;height:12px;cursor:ns-resize;display:grid;place-items:center;touch-action:none}
+  .spanblock .rsz::before{content:"";width:30px;height:3px;border-radius:2px;background:var(--muted);opacity:.6}
+  .spanblock.resizing{box-shadow:0 4px 16px rgba(255,140,26,.45);border-color:var(--accent)}
+  .spanblock .rz-tip{position:absolute;right:6px;top:4px;background:var(--accent);color:#12100c;font-weight:700;font-size:11px;border-radius:6px;padding:2px 7px;pointer-events:none;z-index:3}
+
+  /* книжка: алфавит */
+  .letters{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:10px}
+  .letter{background:var(--panel);border:1px solid var(--line);border-radius:12px;aspect-ratio:1;display:grid;place-items:center;font-size:26px;font-weight:800;cursor:pointer;transition:.15s;position:relative}
+  .letter:hover{border-color:var(--accent);color:var(--accent)}
+  .letter.has::after{content:attr(data-n);position:absolute;top:6px;right:8px;font-size:11px;font-weight:700;color:var(--accent)}
+  .note{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px 15px;margin-bottom:8px;cursor:pointer}
+  .note:hover{border-color:var(--accent)}
+  .note b{font-size:15px}
+  .note .upd{color:var(--muted);font-size:11.5px;margin-top:3px}
+  .files{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
+  .filecard{background:var(--bg2);border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:12px}
+  .filecard img,.filecard .ficon{width:100%;height:100px;object-fit:cover;display:grid;place-items:center;font-size:34px;background:var(--steel)}
+  .filecard .fbody{padding:8px}
+  .filecard .fname{word-break:break-word;min-height:30px}
+  .filecard .fops{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+  .filecard .fops button{font-size:10.5px;padding:2px 7px;border-radius:6px;background:transparent;border:1px solid var(--line);color:var(--muted);cursor:pointer;font-family:inherit}
+  .filecard .fops button:hover{border-color:var(--accent);color:var(--accent)}
+  .filecard img{cursor:pointer}
+
+  /* контакты */
+  .contact{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:8px;flex-wrap:wrap}
+  .contact .who{flex:1;min-width:200px}
+  .contact .who b{font-size:14.5px}
+  .contact .who .sub{color:var(--muted);font-size:12.5px;word-break:break-word}
+  .contact .ops{display:flex;gap:6px;flex-wrap:wrap}
+
+  .empty{color:var(--muted);text-align:center;padding:50px 0;font-size:14px}
+  .errbox{background:#3a1d1d;border:1px solid #6e2c2c;border-radius:10px;padding:14px 16px;margin:20px 0;color:#ffb3b3;font-size:14px}
+  .noteinfo{color:var(--muted);font-size:12px;margin-top:14px}
+
+  /* модальные окна */
+  .overlay{position:fixed;inset:0;background:rgba(5,12,20,.72);display:none;place-items:center;z-index:100;padding:16px}
+  .overlay.open{display:grid}
+  .modal{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:22px;width:min(580px,100%);max-height:92vh;overflow:auto}
+  .modal h3{margin-bottom:14px;font-size:17px}
+  .modal label{display:block;font-size:12px;color:var(--muted);margin:12px 0 5px}
+  .modal input,.modal textarea,.modal select{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--text);font-size:14px;font-family:inherit}
+  .modal input:focus,.modal textarea:focus,.modal select:focus{outline:none;border-color:var(--accent)}
+  .modal textarea{min-height:100px;resize:vertical}
+  .mrow{display:flex;gap:10px}.mrow>div{flex:1}
+  .mfoot{display:flex;gap:10px;margin-top:18px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+  .mfoot .danger{margin-right:auto;background:transparent;border:1px solid #6e2c2c;color:#ff9d9d}
+  .mfoot .danger:hover{background:rgba(255,0,0,.08)}
+  .merr{color:#ffb3b3;font-size:13px;margin-top:10px;display:none}
+  .mnote{color:var(--muted);font-size:12px;margin-right:auto}
+
+  /* сканер */
+  #scanOverlay .modal{width:min(760px,100%)}
+  #video{width:100%;max-height:46vh;background:#000;border-radius:10px;object-fit:contain}
+  .scanops{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+  .pages{display:flex;gap:8px;overflow-x:auto;padding:8px 0}
+  .page{position:relative;flex:0 0 84px}
+  .page canvas{width:84px;height:112px;object-fit:cover;border-radius:8px;border:2px solid var(--line);background:#000}
+  .page .no{position:absolute;top:3px;left:5px;font-size:10px;background:rgba(0,0,0,.6);border-radius:6px;padding:0 5px}
+  .page .del{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;border:0;background:rgba(180,40,40,.85);color:#fff;cursor:pointer;font-size:11px;line-height:1}
+  .cropwrap{margin-top:10px;display:none}
+  #cropCanvas{width:100%;max-height:40vh;border:1px solid var(--line);border-radius:10px;cursor:crosshair;background:#000}
+  .chkline{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:13.5px}
+  .chkline label{display:flex;align-items:center;gap:6px;color:var(--text);margin:0;font-size:13.5px}
+  .chkline input{accent-color:var(--accent);width:15px;height:15px}
+  .who{color:var(--muted);font-size:12.5px}
+  .micbtn{width:34px;height:30px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-size:15px;line-height:1}
+  .micbtn:hover{border-color:var(--accent);color:var(--accent)}
+  .micbtn.rec{border-color:#c0392b;color:#e74c3c;animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.4}}
+  .lblrow{display:flex;align-items:center;gap:8px}
+  .lblrow label{flex:1;margin:12px 0 5px}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--muted);border-top-color:var(--accent);border-radius:50%;animation:sp 1s linear infinite;vertical-align:-2px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .logo-img{width:40px;height:40px;border-radius:8px;display:block}
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="nav">
+  <div class="logo"><img class="logo-img" src="/logo.png" alt="RVA161">Органайзер</div>
+  <nav class="tabs" id="tabs">
+    <button class="tab on" data-view="inbox">Задачи<span class="n" id="n-inbox"></span></button>
+    <button class="tab" data-view="today">Сегодня<span class="n" id="n-today"></span></button>
+    <button class="tab" data-view="cal">Календарь</button>
+    <button class="tab" data-view="mail">Почта</button>
+    <button class="tab" data-view="book">Книжка</button>
+    <button class="tab" data-view="contacts">Контакты</button>
+    <button class="tab" data-view="archive">Архив</button>
+    <button class="tab" data-view="trash">Корзина</button>
+  </nav>
+  <div class="right">
+    <button class="btn btn-acc" onclick="openNew()">+ Задача</button>
+    <a class="btn btn-ghost" href="/" title="На главную страницу сайта">← Главная страница</a>
+  </div>
+</div></div></header>
+
+<main class="wrap">
+  <div id="deny" class="errbox" style="display:none"></div>
+  <div class="bar">
+    <h2 id="vtitle">Входящие</h2><span class="cnt" id="vcnt"></span>
+    <div class="calnav" id="calnav" style="display:none">
+      <button class="btn btn-ghost btn-sm" onclick="calShift(-1)">←</button>
+      <button class="btn btn-ghost btn-sm" onclick="calReset()">Сегодня</button>
+      <button class="btn btn-ghost btn-sm" onclick="calShift(1)">→</button>
+      <span class="caldate" id="caldate"></span>
+      <button class="tab on" id="modeDay" onclick="calMode('day')">День</button>
+      <button class="tab" id="modeWeek" onclick="calMode('week')">Неделя</button>
+      <button class="tab" id="modeMonth" onclick="calMode('month')">Месяц</button>
+    </div>
+    <div class="calnav" id="booknav" style="display:none">
+      <button class="btn btn-ghost btn-sm" id="bookBack" onclick="bookUp()">← Назад</button>
+      <button class="btn btn-ghost btn-sm" id="bookHome" onclick="bookHomeView()">Главная книги</button>
+      <button class="btn btn-acc btn-sm" onclick="openNewNote()">+ Запись</button>
+    </div>
+    <div class="calnav" id="ctnav" style="display:none">
+      <button class="btn btn-acc btn-sm" onclick="openNewContact()">+ Контакт</button>
+    </div>
+    <div class="calnav" id="mailnav" style="display:none">
+      <span id="mailboxes"></span>
+      <button class="tab on" id="mf-all" onclick="mailFilter('')">Все</button>
+      <button class="tab" id="mf-unread" onclick="mailFilter('unread')">Непрочитанные</button>
+      <button class="btn btn-acc btn-sm" onclick="openNewBox()">+ Ящик</button>
+    </div>
+  </div>
+  <div id="list"></div>
+</main>
+
+<!-- задача / контакт / сообщение -->
+<div class="overlay" id="ov">
+  <div class="modal">
+    <h3 id="mtitle">Новая задача</h3>
+    <div class="lblrow"><label>Название</label><button class="micbtn" title="Продиктовать название" onclick="micToggle('f-title', this)">🎤</button></div>
+    <input id="f-title" placeholder="Что сделать?">
+    <label>Описание</label><textarea id="f-body" placeholder="Подробности (необязательно)"></textarea>
+    <div class="mrow">
+      <div><label>Срок — дата (пусто — без срока, в «Задачах»)</label><input id="f-date" type="date"></div>
+      <div><label>Время (необязательно)</label><input id="f-time" type="time"></div>
+      <div><label>Таймфрейм, мин</label><input id="f-mins" type="number" min="5" max="600" step="5" value="25"></div>
+    </div>
+    <label>Повтор</label>
+    <select id="f-rec">
+      <option value="">Нет</option>
+      <option value="daily">Ежедневно</option>
+      <option value="weekly">Еженедельно</option>
+      <option value="monthly">Ежемесячно</option>
+      <option value="yearly">Ежегодно</option>
+    </select>
+    <div class="merr" id="merr"></div>
+    <div class="mfoot">
+      <button class="danger" id="fdel" style="display:none" onclick="delTask()">Удалить</button>
+      <button class="btn btn-ghost" onclick="closeOv()">Отмена</button>
+      <button class="btn btn-acc" onclick="saveTask()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ovContact">
+  <div class="modal">
+    <h3 id="mcTitle">Новый контакт</h3>
+    <label>Имя / организация</label><input id="c-name" placeholder="ООО «Ромашка», Иван Петров…">
+    <div class="mrow">
+      <div><label>Телефон</label><input id="c-phone" placeholder="+7 900 000-00-00"></div>
+      <div><label>Email</label><input id="c-email" placeholder="mail@example.ru"></div>
+    </div>
+    <label>Заметка</label><input id="c-note" placeholder="Кто это / что важно знать">
+    <div class="merr" id="mcErr"></div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" onclick="closeOv()">Отмена</button>
+      <button class="btn btn-acc" onclick="saveContact()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ovMsg">
+  <div class="modal">
+    <h3 id="mmTitle">Сообщение</h3>
+    <div class="mnote" id="mmTo"></div>
+    <label>Канал</label>
+    <select id="mm-chan">
+      <option value="max">💬 MAX-бот (клиенту в мессенджер)</option>
+      <option value="telegram">💬 Telegram-бот</option>
+      <option value="email">✉️ Письмо (откроется почтовая программа)</option>
+    </select>
+    <label>Текст сообщения</label>
+    <textarea id="mm-text" placeholder="Здравствуйте! …"></textarea>
+    <div class="merr" id="mmErr"></div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" onclick="closeOv()">Отмена</button>
+      <button class="btn btn-acc" onclick="sendMsg()">Отправить</button>
+    </div>
+  </div>
+</div>
+
+<!-- записная книжка: запись -->
+<div class="overlay" id="ovNote">
+  <div class="modal">
+    <h3 id="mnTitle">Запись</h3>
+    <label>Название (по алфавиту книга разложится по первой букве)</label>
+    <input id="n-title" placeholder="Например: Поставщики масел">
+    <div class="lblrow"><label>Текст</label>
+      <button class="micbtn" title="Продиктовать текст" onclick="micToggle('n-body', this)">🎤</button>
+      <button class="micbtn" title="Прикрепить скан, фото или документ" onclick="clipFromModal()">📎</button>
+    </div>
+    <textarea id="n-body" style="min-height:140px" placeholder="Любая информация"></textarea>
+    <div class="merr" id="mnErr"></div>
+    <div class="mfoot">
+      <button class="danger" id="ndel" style="display:none" onclick="delNote()">Удалить</button>
+      <button class="btn btn-ghost" onclick="closeOv()">Отмена</button>
+      <button class="btn btn-acc" onclick="saveNote()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- почта: ответ и добавление ящика -->
+<div class="overlay" id="ovReply">
+  <div class="modal">
+    <h3 id="mrTitle">Ответ</h3>
+    <div class="mnote" id="mrTo"></div>
+    <label>Текст ответа (цитата письма добавится сама)</label>
+    <textarea id="mr-text" style="min-height:130px"></textarea>
+    <div class="merr" id="mrErr"></div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" onclick="closeOv()">Отмена</button>
+      <button class="btn btn-acc" onclick="sendReply()">Отправить</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ovBox">
+  <div class="modal">
+    <h3>Добавить почтовый ящик</h3>
+    <label>Название (для себя)</label><input id="b-name" placeholder="Личная почта">
+    <label>IMAP-сервер</label><input id="b-host" placeholder="imap.yandex.ru / imap.gmail.com" value="imap.yandex.ru">
+    <div class="mrow">
+      <div><label>Логин (адрес ящика)</label><input id="b-user" placeholder="mail@example.ru"></div>
+      <div><label>Пароль приложения</label><input id="b-pass" type="password" placeholder="пароль приложения"></div>
+    </div>
+    <div class="merr" id="bErr"></div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" onclick="closeOv()">Отмена</button>
+      <button class="btn btn-acc" onclick="saveBox()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<!-- сканер -->
+<div class="overlay" id="scanOverlay">
+  <div class="modal">
+    <h3>Сканер</h3>
+    <video id="video" autoplay playsinline muted></video>
+    <div class="scanops">
+      <button class="btn btn-acc btn-sm" id="snapBtn" onclick="snapPage()" style="display:none">📷 Снять страницу</button>
+      <button class="btn btn-ghost btn-sm" id="camBtn" onclick="startCam()">Включить камеру</button>
+      <label class="btn btn-ghost btn-sm" style="margin:0">📷 Фото с камеры телефона<input type="file" accept="image/*" capture="environment" style="display:none" onchange="filePages(this.files)"></label>
+      <label class="btn btn-ghost btn-sm" style="margin:0">🖼 Из галереи / файла<input type="file" accept="image/*" multiple style="display:none" onchange="filePages(this.files)"></label>
+      <button class="btn btn-ghost btn-sm" id="cropBtn" onclick="toggleCrop()" style="display:none">✂️ Кадрировать</button>
+      <button class="btn btn-ghost btn-sm" id="rotBtn" onclick="rotPage()" style="display:none">↻ Повернуть</button>
+      <select id="filterSel" style="width:auto;display:none" onchange="applyFilter()">
+        <option value="orig">Оригинал</option>
+        <option value="gray">Чёрно-белый</option>
+        <option value="text">Текст (контраст)</option>
+        <option value="color">Цветной документ</option>
+      </select>
+    </div>
+    <div class="cropwrap" id="cropwrap"><canvas id="cropCanvas"></canvas>
+      <div style="color:var(--muted);font-size:12px;margin-top:6px">Выделите границы листа мышью (прямоугольник) — кнопка ниже применит кадр.</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="applyCrop()">Применить кадрирование</button>
+    </div>
+    <div class="pages" id="pages"></div>
+    <label>Имя документа</label>
+    <input id="scan-name" placeholder="scan_ГГГГ-ММ-ДД">
+    <div class="chkline">
+      <span id="bookWrap"><label><input type="checkbox" id="sc-book" checked> В книжку (новая запись с этим именем)</label></span>
+      <label><input type="checkbox" id="sc-down"> Скачать PDF</label>
+      <label><input type="checkbox" id="sc-yadisk"> На Яндекс.Диск</label>
+    </div>
+    <div class="merr" id="scErr"></div>
+    <div class="mfoot">
+      <button class="btn btn-ghost" onclick="stopScan()">Закрыть</button>
+      <button class="btn btn-acc" id="scSave" onclick="saveScan()">Сохранить скан</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML };
+const MONTHS = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+const WD = ["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"];
+const SRC = { manual: "вручную", max: "бот MAX", telegram: "бот Telegram", "mail:info@vredkin.ru": "почта info@" };
+let view = "inbox", tasks = [], counts = { inbox: 0, today: 0, carried: 0 }, today = "";
+let cal = { date: "", mode: "day" };
+let editing = null, contacts = [];
+// книжка: "letters" | "letter" | "note"
+let book = { sub: "letters", letter: "", noteId: 0, note: null, files: [] };
+let msgContact = null;
+
+async function api(path, body, raw) {
+  const opt = body !== undefined ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : undefined;
+  if (raw) opt = { method: "POST", body: raw, headers: Object.assign({ "Content-Type": "application/octet-stream" }, opt && opt.headers) };
+  const r = await fetch("/api/organizer/" + path, opt);
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || ("Ошибка " + r.status));
+  return d;
+}
+function iso(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+function ruDate(s) { if (!s) return ""; const p = s.split("-"); return `${+p[2]} ${MONTHS[+p[1] - 1]}`; }
+function relDay(s) { if (s === today) return "сегодня"; if (s === iso(new Date(Date.now() + 864e5))) return "завтра"; return ruDate(s); }
+
+// ---------- загрузка ----------
+async function load() {
+  try {
+    if (view === "cal") {
+      // в календаре выполненные задачи остаются — перечёркнутыми (&done=1)
+      const d = await api(`tasks?view=${cal.mode}&date=${cal.date}&done=1`);
+      tasks = d.tasks; counts = d.counts; today = d.today;
+      renderCal();
+    } else if (view === "book") { await renderBook(); }
+    else if (view === "mail") { await renderMail(); }
+    else if (view === "contacts") { await renderContacts(); }
+    else {
+      const d = await api("tasks?view=" + view);
+      tasks = d.tasks; counts = d.counts; today = d.today;
+      renderList();
+    }
+    // бейджи всегда занимают место (пустой — невидимый): кнопки не сдвигаются,
+    // иначе клик мимо уезжает на соседнюю вкладку
+    setBadge("n-inbox", counts.inbox);
+    setBadge("n-today", counts.today);
+  } catch (e) { showErr(e); }
+}
+function setBadge(id, n) {
+  const el = $(id);
+  el.textContent = n || "";
+  el.classList.toggle("vis", !!n);
+}
+function showErr(e) {
+  const m = String(e.message);
+  $("deny").style.display = "";
+  if (/403|доступ/i.test(m)) $("deny").textContent = "Нет доступа к органайзеру. Доступ выдаётся списком 5-го уровня (procenka/organizer_people.json).";
+  else if (/401|Войдите/.test(m)) $("deny").innerHTML = 'Войдите на сайте — <a href="/" style="color:var(--accent)">главная страница</a>.';
+  else $("deny").textContent = "Ошибка: " + m;
+  $("list").innerHTML = "";
+}
+
+// ---------- списки задач ----------
+const TITLES = { inbox: "Задачи", today: "Сегодня", archive: "Архив — выполненные", trash: "Корзина" };
+function contactOf(t) {
+  if (t.contact_id) return contacts.find(c => c.id === t.contact_id);
+  if (t.contact) return contacts.find(c => (c.email && c.email === t.contact) || (c.login && c.login === t.contact));
+  return null;
+}
+function ctas(t) {
+  const c = contactOf(t);
+  if (!c) return "";
+  const tel = c.phone ? `<a class="cta" href="tel:${esc(c.phone)}">📞 Позвонить</a>` : "";
+  const mail = c.email ? `<a class="cta" href="mailto:${esc(c.email)}?subject=${encodeURIComponent("По задаче: " + t.title)}">✉️ Письмо</a>` : "";
+  const msg = (c.max_id || c.telegram_id || c.login) ? `<a class="cta" href="#" onclick="openMsg(${c.id});return false">💬 Сообщение</a>` : "";
+  return tel + mail + msg;
+}
+function taskCard(t, opts = {}) {
+  const badges = [];
+  if (SRC[t.source]) badges.push(`<span class="badge src">${SRC[t.source]}</span>`);
+  if (t.contact) badges.push(`<span class="badge">${esc(contactOf(t)?.name || t.contact)}</span>`);
+  if (t.carry) badges.push(`<span class="badge carry">перенесено ${t.carry}×</span>`);
+  const REC = { daily: "🔁 ежедневно", weekly: "🔁 еженедельно", monthly: "🔁 ежемесячно", yearly: "🔁 ежегодно" };
+  if (t.rec) badges.push(`<span class="badge time">${REC[t.rec]}</span>`);
+  if (t.due_time) badges.push(`<span class="badge time">${t.due_time}</span>`);
+  else if (opts.inbox) {   // задача без срока: показываем, когда поставлена
+    const d = new Date(t.created_at || Date.now());
+    badges.push(`<span class="badge time">поставлена ${String(d.getDate()).padStart(2, "0")}.${String(d.getMonth() + 1).padStart(2, "0")}</span>`);
+  }
+  else if (opts.showDate && t.due_date) badges.push(`<span class="badge time">${relDay(t.due_date)}</span>`);
+  const ck = (t.done || t.deleted) ? "" :
+    opts.inbox ? `<input type="checkbox" title="Убрать в корзину" onchange="delInbox(${t.id})">` :
+    `<input type="checkbox" title="Выполнено" onchange="setDone(${t.id}, this.checked)">`;
+  const restore = t.deleted ? `<button class="btn btn-ghost btn-sm restore" onclick="restore(${t.id})">Восстановить</button>` : "";
+  return `<div class="task"><span class="ck">${ck}</span>
+    <div class="t ${t.done ? "done" : ""}" onclick="openEdit(${t.id})">
+      <b>${esc(t.title)}</b>
+      ${t.body ? `<div class="bodytxt">${esc(t.body)}</div>` : ""}
+      <div class="meta">${badges.join("")}</div>${!t.done && !t.deleted ? ctas(t) : ""}
+    </div>${restore}</div>`;
+}
+function renderList() {
+  $("vtitle").textContent = TITLES[view] || "";
+  $("vcnt").textContent = tasks.length ? tasks.length + " шт." : "";
+  $("calnav").style.display = "none"; $("booknav").style.display = "none"; $("ctnav").style.display = "none"; $("mailnav").style.display = "none";
+  $("list").innerHTML = tasks.length ? tasks.map(t => taskCard(t, { showDate: view !== "today", inbox: view === "inbox" })).join("")
+    : `<div class="empty">${view === "inbox" ? "Задач нет — всё спокойно" :
+       view === "today" ? "На сегодня задач нет" :
+       view === "archive" ? "Выполненных задач пока нет" : "Корзина пуста"}</div>`;
+}
+
+// ---------- календарь ----------
+function calMode(m) {
+  cal.mode = m;
+  $("modeDay").classList.toggle("on", m === "day");
+  $("modeWeek").classList.toggle("on", m === "week");
+  $("modeMonth").classList.toggle("on", m === "month");
+  load();
+}
+function calReset() { cal.date = today; load(); }
+function calShift(dir) {
+  const d = new Date(cal.date + "T12:00:00");
+  if (cal.mode === "month") d.setMonth(d.getMonth() + dir);
+  else d.setDate(d.getDate() + dir * (cal.mode === "week" ? 7 : 1));
+  cal.date = iso(d); load();
+}
+function renderCal() {
+  $("vtitle").textContent = "Календарь"; $("vcnt").textContent = "";
+  $("calnav").style.display = ""; $("booknav").style.display = "none"; $("ctnav").style.display = "none"; $("mailnav").style.display = "none";
+  const d = new Date(cal.date + "T12:00:00");
+  $("caldate").textContent = cal.mode === "day" ? `${d.getDate()} ${MONTHS[d.getMonth()]}, ${WD[d.getDay()]}` :
+    cal.mode === "week" ? `Неделя: ${d.getDate()} ${MONTHS[d.getMonth()]}` :
+    `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  if (cal.mode === "day") {
+    const allday = tasks.filter(t => !t.due_time);
+    // сетка дня: получасовые поля — в них двойной клик и перетаскивание,
+    // сами задачи рисуются поверх полями на весь таймфрейм (renderDayBlocks)
+    let html = `<div class="hourrow"><div class="slot allday" data-time="" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropAttr(event,this)" ondblclick="slotDbl(this)"><div class="slotlabel">Весь день — двойной клик: новая задача</div>${allday.map(chip).join("")}</div></div>`;
+    html += `<div class="daygrid" id="daygrid">`;
+    for (let h = 7; h <= 21; h++) for (const m of [0, 30]) {
+      const hh = String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0");
+      html += `<div class="hourrow"><div class="hour">${hh}</div><div class="slot" data-time="${hh}" title="Двойной клик — задача на это время" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropAttr(event,this)" ondblclick="slotDbl(this)"></div></div>`;
+    }
+    html += `</div><p style="color:var(--muted);font-size:12.5px;margin-top:10px">Потяните нижний край задачи — изменится длительность (одним полем на весь таймфрейм). Двойной клик по полю — новая задача; перетаскивание задачи меняет время.</p>`;
+    $("list").innerHTML = html;
+    renderDayBlocks();
+  } else if (cal.mode === "week") {
+    const mon = new Date(cal.date + "T12:00:00"); mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7));
+    let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px">`;
+    for (let i = 0; i < 7; i++) {
+      const dd = new Date(mon); dd.setDate(mon.getDate() + i);
+      const ds = iso(dd);
+      html += `<div class="daycol tall ${ds === today ? "today" : ""}" data-date="${ds}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropAttr(event,this)">
+        <h4>${dd.getDate()} ${MONTHS[dd.getMonth()].slice(0, 3)}<br><small>${WD[dd.getDay()].slice(0, 2)}</small></h4>
+        <div class="dropzone" ondblclick="slotDbl(this)">${tasks.filter(t => t.due_date === ds).map(chip).join("")}</div></div>`;
+    }
+    $("list").innerHTML = html + `</div><p style="color:var(--muted);font-size:12.5px;margin-top:12px">Перетащите задачу на колонку дня — сменится дата. Точное время ставится в виде «День». Двойной клик по дню — новая задача.</p>`;
+  } else { // месяц
+    const first = new Date(cal.date + "T12:00:00"); first.setDate(1);
+    const start = new Date(first); start.setDate(1 - ((first.getDay() + 6) % 7));
+    const mname = d.getMonth();
+    let html = `<div class="mgrid">`;
+    ["пн", "вт", "ср", "чт", "пт", "сб", "вс"].forEach(w =>
+      html += `<div style="text-align:center;color:var(--muted);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;padding:2px 0">${w}</div>`);
+    for (let i = 0; i < 42; i++) {
+      const dd = new Date(start); dd.setDate(start.getDate() + i);
+      const ds = iso(dd);
+      const out = dd.getMonth() !== mname;
+      html += `<div class="mcell ${ds === today ? "today" : ""}" data-date="${ds}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropAttr(event,this)" ondblclick="slotDbl(this)" style="${out ? "opacity:.45" : ""}">
+        <div class="dnum">${dd.getDate()}</div>${tasks.filter(t => t.due_date === ds).map(chip).join("")}</div>`;
+    }
+    $("list").innerHTML = html + `</div><p style="color:var(--muted);font-size:12.5px;margin-top:12px">Двойной клик по дню — новая задача; перетаскивание меняет дату.</p>`;
+  }
+}
+function slotDbl(el) { // двойной клик по слоту/дню — новая задача с этой датой и временем
+  const time = el.dataset && el.dataset.time !== undefined && el.dataset.time !== "" ? el.dataset.time : "";
+  const date = el.dataset && el.dataset.date ? el.dataset.date : cal.date;
+  openNew(date, time);
+}
+function chipInner(t) {
+  const REC = { daily: "ежедневно", weekly: "еженедельно", monthly: "ежемесячно", yearly: "ежегодно" };
+  let time = "";
+  if (t.due_time) {   // показываем таймфрейм: начало – конец (начало + длительность)
+    time = t.due_time;
+    const [h, m] = t.due_time.split(":").map(Number);
+    const end = new Date(2000, 0, 1, h, m + (t.mins || 25));
+    time += "–" + String(end.getHours()).padStart(2, "0") + ":" + String(end.getMinutes()).padStart(2, "0");
+  }
+  return `${time ? `<small>${time}</small>` : ""}${esc(t.title)}${t.carry ? ` <small>перенесено ${t.carry}×</small>` : ""}${t.rec ? ` <small>🔁 ${REC[t.rec]}</small>` : ""}`;
+}
+function chip(t) {
+  return `<div class="minitask" draggable="true" ${t.done ? 'style="text-decoration:line-through;opacity:.55"' : ""} ondragstart="dragStart(event,${t.id})" onclick="openEdit(${t.id})">${chipInner(t)}</div>`;
+}
+// день: задачи лежат поверх сетки получасовых полей — длинная задача видна ОДНИМ ПОЛЕМ
+// на весь свой таймфрейм, а за нижний край её можно растянуть мышью
+const SLOT_H = 46, DAY_START = 7, DAY_END = 22;   // сетка 7:00–22:00 получасами
+function renderDayBlocks() {
+  const grid = $("daygrid"); if (!grid) return;
+  const timed = tasks.filter(t => t.due_time).map(t => {
+    const [h, m] = t.due_time.split(":").map(Number);
+    const rel = Math.max(0, (h * 60 + m) - DAY_START * 60);
+    return { t, top: rel / 30 * SLOT_H, hpx: Math.max(30, (t.mins || 25) / 30 * SLOT_H) };
+  }).sort((a, b) => a.top - b.top);
+  const colEnd = [];   // перекрывающиеся по времени задачи встают в ряд колонками
+  timed.forEach(it => {
+    let c = colEnd.findIndex(end => end <= it.top + 2);
+    if (c === -1) { colEnd.push(0); c = colEnd.length - 1; }
+    colEnd[c] = it.top + it.hpx; it.col = c;
+  });
+  const n = Math.max(1, colEnd.length);
+  timed.forEach(it => {
+    const t = it.t;
+    grid.insertAdjacentHTML("beforeend",
+      `<div class="spanblock" draggable="true" style="top:${it.top}px;height:${it.hpx}px;` +
+      `left:calc(78px + (100% - 78px) * ${it.col} / ${n});width:calc((100% - 78px) / ${n} - 6px);` +
+      `${t.done ? "text-decoration:line-through;opacity:.55" : ""}"` +
+      ` ondragstart="dragStart(event,${t.id})" onclick="openEdit(${t.id})">` +
+      `${chipInner(t)}<div class="rsz" onpointerdown="rszStart(event,${t.id})" title="Потяните — изменится длительность"></div></div>`);
+  });
+}
+function rszStart(ev, id) {   // растягивание задачи за нижний край (мышь/палец), шаг — полчаса
+  ev.preventDefault(); ev.stopPropagation();
+  const el = ev.target.closest(".spanblock");
+  const t = tasks.find(x => x.id === id); if (!t || !t.due_time) return;
+  const [h0, m0] = t.due_time.split(":").map(Number);
+  const startY = ev.clientY, baseH = el.offsetHeight, startMins = t.mins || 25;
+  const maxSlots = Math.max(1, Math.floor((DAY_END * 60 - (h0 * 60 + m0)) / 30));
+  const wasDraggable = el.draggable; el.draggable = false; el.classList.add("resizing");
+  const tip = document.createElement("div"); tip.className = "rz-tip"; el.appendChild(tip);
+  let slots = Math.max(1, Math.round(startMins / 30));
+  const mv = e => {
+    slots = Math.max(1, Math.min(maxSlots, Math.round((baseH + e.clientY - startY) / SLOT_H)));
+    el.style.height = slots * SLOT_H + "px";
+    const end = new Date(2000, 0, 1, h0, m0 + slots * 30);
+    const mm = slots * 30, dur = mm >= 60 ? `${Math.floor(mm / 60)} ч${mm % 60 ? " " + mm % 60 + " мин" : ""}` : `${mm} мин`;
+    tip.textContent = `до ${String(end.getHours()).padStart(2, "0")}:${String(end.getMinutes()).padStart(2, "0")} (${dur})`;
+  };
+  const up = async () => {
+    window.removeEventListener("pointermove", mv); window.removeEventListener("pointerup", up);
+    el.classList.remove("resizing"); tip.remove(); el.draggable = wasDraggable;
+    const mins = slots * 30;
+    if (mins !== startMins) {   // растянули — не открывать модалку по клику после отпускания
+      el.addEventListener("click", e => e.stopPropagation(), { once: true, capture: true });
+      try { await api("tasks/" + id, { action: "mins", mins }); } catch (e) { alert(e.message); }
+    }
+    await load();
+  };
+  window.addEventListener("pointermove", mv); window.addEventListener("pointerup", up);
+}
+let dragId = null;
+function dragStart(ev, id) { dragId = id; ev.dataTransfer.effectAllowed = "move"; }
+function dragOver(ev) { ev.preventDefault(); ev.currentTarget.classList.add("over"); }
+function dragLeave(ev) { ev.currentTarget.classList.remove("over"); }
+function dropAttr(ev, el) {
+  ev.preventDefault(); el.classList.remove("over");
+  const time = el.dataset.time !== undefined ? el.dataset.time : null;
+  const date = el.dataset.date || cal.date;
+  moveTask(dragId, date, time === "" ? null : time);
+  dragId = null;
+}
+async function setDone(id, done) { try { await api("tasks/" + id, { action: done ? "done" : "undone" }); await load(); } catch (e) { alert(e.message); } }
+async function delInbox(id) {   // галочка в «Задачах»: безсрочная задача убирается в корзину
+  if (!confirm("Убрать задачу в корзину?")) { await load(); return; }
+  try { await api("tasks/" + id, { action: "delete" }); await load(); } catch (e) { alert(e.message); }
+}
+async function moveTask(id, date, time) {
+  if (id == null) return;
+  try { await api("tasks/" + id, { action: "move", due_date: date, due_time: time }); await load(); }
+  catch (e) { alert(e.message); }
+}
+async function restore(id) { try { await api("tasks/" + id, { action: "restore" }); await load(); } catch (e) { alert(e.message); } }
+
+// ---------- модалки задач ----------
+function openOv(id) { $(id).classList.add("open"); }
+function closeOv() { document.querySelectorAll(".overlay").forEach(o => o.classList.remove("open")); editing = null; }
+function openNew(date, time) {
+  editing = null; $("mtitle").textContent = "Новая задача";
+  $("f-title").value = ""; $("f-body").value = "";
+  $("f-date").value = date || (view === "cal" ? cal.date : view === "inbox" ? "" : today);
+  $("f-time").value = time || "";
+  $("f-mins").value = 25;
+  $("f-rec").value = "";
+  $("fdel").style.display = "none"; $("merr").style.display = "none";
+  openOv("ov"); $("f-title").focus();
+}
+function openEdit(id) {
+  const t = tasks.find(x => x.id === id); if (!t) return;
+  editing = id; $("mtitle").textContent = "Задача";
+  $("f-title").value = t.title; $("f-body").value = t.body;
+  $("f-date").value = t.due_date; $("f-time").value = t.due_time || "";
+  $("f-mins").value = t.mins || 25;
+  $("f-rec").value = t.rec || "";
+  $("fdel").style.display = view === "trash" ? "none" : ""; $("merr").style.display = "none";
+  openOv("ov");
+}
+function merr(id, s) { const e = $(id); e.textContent = s; e.style.display = ""; }
+async function saveTask() {
+  const p = { title: $("f-title").value, body: $("f-body").value, due_date: $("f-date").value,
+              due_time: $("f-time").value, rec: $("f-rec").value, mins: Number($("f-mins").value) || 25 };
+  try {
+    if (editing) await api("tasks/" + editing, { action: "edit", ...p });
+    else await api("tasks", p);
+    closeOv(); await load();
+  } catch (e) { merr("merr", e.message); }
+}
+async function delTask() {
+  if (!editing || !confirm("Убрать задачу в корзину?")) return;
+  try { await api("tasks/" + editing, { action: "delete" }); closeOv(); await load(); } catch (e) { merr("merr", e.message); }
+}
+
+// ---------- контакты ----------
+async function loadContacts() { try { contacts = (await api("contacts")).contacts; } catch (e) { contacts = []; } }
+async function renderContacts() {
+  $("vtitle").textContent = "Контакты"; $("vcnt").textContent = "";
+  $("calnav").style.display = "none"; $("booknav").style.display = "none"; $("ctnav").style.display = ""; $("mailnav").style.display = "none";
+  await loadContacts();
+  $("list").innerHTML = contacts.length ? contacts.map(c => {
+    const ops = [];
+    if (c.phone) ops.push(`<a class="btn btn-ghost btn-sm" href="tel:${esc(c.phone)}">📞 Позвонить</a>`);
+    if (c.email) ops.push(`<a class="btn btn-ghost btn-sm" href="mailto:${esc(c.email)}">✉️ Письмо</a>`);
+    if (c.max_id || c.telegram_id || c.login) ops.push(`<button class="btn btn-ghost btn-sm" onclick="openMsg(${c.id})">💬 Сообщение</button>`);
+    return `<div class="contact"><div class="who"><b>${esc(c.name || c.email || c.phone)}</b>
+      <div class="sub">${[c.phone, c.email, c.login ? "аккаунт: " + c.login : "", c.note].filter(Boolean).map(esc).join(" · ")}</div></div>
+      <div class="ops">${ops.join("") || '<span class="who">нет данных для связи</span>'}</div></div>`;
+  }).join("") : `<div class="empty">Контактов пока нет — появятся из писем и зарегистрированных клиентов, можно добавить вручную.</div>`;
+}
+function openNewContact() { $("mcTitle").textContent = "Новый контакт"; ["c-name", "c-phone", "c-email", "c-note"].forEach(i => $(i).value = ""); $("mcErr").style.display = "none"; openOv("ovContact"); }
+async function saveContact() {
+  try {
+    await api("contacts", { name: $("c-name").value, phone: $("c-phone").value, email: $("c-email").value, note: $("c-note").value });
+    closeOv(); await renderContacts();
+  } catch (e) { merr("mcErr", e.message); }
+}
+function openMsg(cid) {
+  msgContact = contacts.find(c => c.id === cid); if (!msgContact) return;
+  $("mmTitle").textContent = "Сообщение — " + (msgContact.name || msgContact.email || "клиент");
+  $("mmTo").textContent = [msgContact.phone, msgContact.email, msgContact.login ? "аккаунт " + msgContact.login : ""].filter(Boolean).join(" · ");
+  const sel = $("mm-chan");
+  sel.options[0].disabled = !(msgContact.max_id || msgContact.login);
+  sel.options[1].disabled = !(msgContact.telegram_id || msgContact.login);
+  if (sel.options[sel.selectedIndex].disabled) sel.selectedIndex = [...sel.options].findIndex(o => !o.disabled);
+  $("mm-text").value = ""; $("mmErr").style.display = "none";
+  openOv("ovMsg");
+}
+async function sendMsg() {
+  const chan = $("mm-chan").value, text = $("mm-text").value.trim();
+  if (!text) return merr("mmErr", "Пустое сообщение");
+  if (chan === "email") { location.href = `mailto:${msgContact.email}?body=${encodeURIComponent(text)}`; closeOv(); return; }
+  try {
+    const r = await api(`contact/${msgContact.id}/message`, { channel: chan, text });
+    closeOv(); alert(r.status || "Отправлено");
+  } catch (e) { merr("mmErr", e.message); }
+}
+
+// ---------- записная книжка ----------
+async function renderBook() {
+  $("vtitle").textContent = "Книжка"; $("vcnt").textContent = "";
+  $("calnav").style.display = "none"; $("ctnav").style.display = "none"; $("mailnav").style.display = "none";
+  $("booknav").style.display = "";
+  $("bookBack").style.display = book.sub === "letters" ? "none" : "";
+  $("bookHome").style.display = book.sub === "letters" ? "none" : "";
+  if (book.sub === "letters") {
+    const d = await api("notes");
+    const RU = "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯ", EN = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const cnt = {}; d.letters.forEach(l => cnt[l.letter] = l.n);
+    const tile = L => `<div class="letter ${cnt[L] ? "has" : ""}" data-n="${cnt[L] || 0}" onclick="bookLetter('${L}')">${L}</div>`;
+    $("list").innerHTML = `<h3 style="margin:4px 0 10px;color:var(--muted);font-size:14px">Русский</h3>
+      <div class="letters">${[...RU, "#"].map(tile).join("")}</div>
+      <h3 style="margin:18px 0 10px;color:var(--muted);font-size:14px">English</h3>
+      <div class="letters">${[...EN].map(tile).join("")}</div>`;
+    $("vcnt").textContent = d.letters.reduce((s, l) => s + l.n, 0) + " записей";
+  } else if (book.sub === "letter") {
+    const d = await api("notes?letter=" + encodeURIComponent(book.letter));
+    $("vtitle").textContent = `Книжка — «${book.letter}»`;
+    $("list").innerHTML = d.notes.length ? d.notes.map(n =>
+      `<div class="note" onclick="openNoteView(${n.id})"><b>${esc(n.title)}</b>${n.body ? `<div class="upd">${esc(n.body.slice(0, 120))}</div>` : ""}<div class="upd">обновлено ${new Date(n.updated_at).toLocaleString("ru-RU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</div></div>`).join("")
+      : `<div class="empty">На букву «${esc(book.letter)}» записей пока нет.</div>
+         <div style="text-align:center"><button class="btn btn-acc" onclick="openNewNote('${esc(book.letter)}')">+ Запись на «${esc(book.letter)}»</button></div>`;
+  } else if (book.sub === "note") {
+    const d = await api("notes/" + book.noteId);
+    book.note = d.note; book.files = d.files;
+    $("vtitle").textContent = book.note.title;
+    const fcards = book.files.map(f => {
+      const ops = [];
+      ops.push(`<button onclick="fileUrl(${f.id})">скачать</button>`);
+      if (f.kind === "image") ops.push(`<button onclick="ocrFile(${f.id})">текст с фото</button>`);
+      if (!f.yadisk) ops.push(`<button onclick="yadiskFile(${f.id})">на Диск</button>`);
+      ops.push(`<button onclick="delFile(${f.id})">удалить</button>`);
+      return `<div class="filecard">${f.kind === "image" ? `<img src="${fileUrl(f.id)}" onclick="fileUrl(${f.id})" alt="">` : `<div class="ficon">${f.kind === "pdf" ? "📕" : f.kind === "txt" ? "📝" : "📎"}</div>`}
+        <div class="fbody"><div class="fname">${esc(f.name)}</div>
+        ${f.yadisk ? `<div style="margin-top:4px"><a href="${esc(f.yadisk)}" target="_blank" style="color:var(--accent);font-size:11px">🔗 Яндекс.Диск</a></div>` : ""}
+        <div class="fops">${ops.join("")}</div></div></div>`;
+    }).join("");
+    $("list").innerHTML = `<div style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:6px">
+        <button class="btn btn-ghost btn-sm" onclick="openEditNote()">✏️ Править</button>
+        <button class="btn btn-acc btn-sm" onclick="clipMenu()">📎 Скрепка</button>
+      </div>
+      <div style="white-space:pre-wrap;font-size:14px">${esc(book.note.body) || '<span style="color:var(--muted)">Текста нет — только вложения.</span>'}</div>
+      ${book.files.length ? `<div class="files">${fcards}</div>` : `<div class="noteinfo">Вложений пока нет — нажмите «📎 Скрепка».</div>`}
+    </div>
+    <input type="file" id="clipInput" style="display:none" onchange="uploadClip(this.files[0])">`;
+  }
+}
+function bookLetter(L) { book.sub = "letter"; book.letter = L; renderBook(); }
+function bookHomeView() { book.sub = "letters"; renderBook(); }
+function bookUp() { if (book.sub === "note") { book.sub = "letter"; renderBook(); } else bookHomeView(); }
+function openNoteView(id) { book.sub = "note"; book.noteId = id; renderBook(); }
+function openNewNote(L = "") {
+  $("mnTitle").textContent = "Новая запись"; $("n-title").value = L; $("n-body").value = "";
+  $("ndel").style.display = "none"; $("mnErr").style.display = "none"; openOv("ovNote");
+}
+function openEditNote() {
+  $("mnTitle").textContent = "Правка записи"; $("n-title").value = book.note.title; $("n-body").value = book.note.body;
+  $("ndel").style.display = ""; $("mnErr").style.display = "none"; openOv("ovNote");
+}
+async function saveNote() {
+  try {
+    if (book.sub === "note" && $("ndel").style.display !== "none") {
+      await api("notes/" + book.noteId, { action: "edit", title: $("n-title").value, body: $("n-body").value });
+    } else {
+      const r = await api("notes", { title: $("n-title").value, body: $("n-body").value });
+      book.sub = "note"; book.noteId = r.id;
+    }
+    closeOv(); await renderBook();
+  } catch (e) { merr("mnErr", e.message); }
+}
+async function delNote() {
+  if (!confirm("Убрать запись в корзину?")) return;
+  try { await api("notes/" + book.noteId, { action: "delete" }); closeOv(); book.sub = "letter"; await renderBook(); } catch (e) { merr("mnErr", e.message); }
+}
+// скрепка из окна записи: новую запись сначала сохраняем, потом предлагаем прикрепить
+async function clipFromModal() {
+  if (!book.noteId || book.sub !== "note") await saveNote();   // создаст запись и book.noteId
+  closeOv();
+  clipMenu();
+}
+
+// ---------- микрофон: запись → /stt → текст в поле ----------
+let recState = null;
+async function micToggle(targetId, btn) {
+  if (recState) { recState.media.stop(); return; }   // повторное нажатие — остановить запись
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const media = new MediaRecorder(stream);
+    const chunks = [];
+    media.ondataavailable = e => chunks.push(e.data);
+    media.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const { target, btn } = recState; recState = null;
+      btn.classList.remove("rec"); btn.textContent = "🎤";
+      try {
+        const blob = new Blob(chunks, { type: media.mimeType || "audio/webm" });
+        const r = await fetch("/api/organizer/stt", { method: "POST", body: blob,
+          headers: { "Content-Type": blob.type || "audio/webm" } });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(d.error || "ошибка " + r.status);
+        $(target).value = ($(target).value ? $(target).value + " " : "") + d.text;
+      } catch (e) { alert("Голос: " + e.message); }
+    };
+    recState = { media, target: targetId, btn };
+    media.start();
+    btn.classList.add("rec"); btn.textContent = "🔴";
+  } catch (e) { alert("Микрофон недоступен: " + e.message); }
+}
+function clipMenu() {
+  const w = 260, h = 120;
+  const m = document.createElement("div");
+  m.style.cssText = `position:fixed;inset:0;background:rgba(5,12,20,.72);display:grid;place-items:center;z-index:120`;
+  m.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:20px;width:${w}px;display:grid;gap:10px">
+    <button class="btn btn-acc" id="m-scan">🖨 Скан (камера)</button>
+    <button class="btn btn-ghost" id="m-photo">📷 Фото или документ файлом</button>
+    <button class="btn btn-ghost" onclick="this.closest('div').parentElement.remove()">Отмена</button></div>`;
+  document.body.appendChild(m);
+  m.querySelector("#m-scan").onclick = () => { m.remove(); openScan(book.noteId); };
+  m.querySelector("#m-photo").onclick = () => { m.remove(); $("clipInput").click(); };
+  m.onclick = e => { if (e.target === m) m.remove(); };
+}
+async function uploadClip(file) {
+  if (!file) return;
+  try {
+    await fetchRaw(`notes/${book.noteId}/file`, file, file.name);
+    await renderBook();
+  } catch (e) { alert("Не удалось прикрепить: " + e.message); }
+}
+async function fetchRaw(path, blob, name) {
+  const r = await fetch("/api/organizer/" + path, { method: "POST", body: blob,
+    headers: { "Content-Type": "application/octet-stream", "X-Filename": encodeURIComponent(name || "файл") } });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || "Ошибка " + r.status);
+  return d;
+}
+const fileUrl = id => "/api/organizer/file/" + id;
+async function ocrFile(id) {
+  try { const r = await api(`file/${id}/ocr`); alert("Текст распознан и сохранён рядом (.txt):\n\n" + (r.text.slice(0, 400))); await renderBook(); }
+  catch (e) { alert(e.message); }
+}
+async function yadiskFile(id) {
+  try { const r = await api(`file/${id}/yadisk`); alert("Файл на Яндекс.Диске:\n" + r.url); await renderBook(); }
+  catch (e) { alert(e.message); }
+}
+async function delFile(id) {
+  if (!confirm("Удалить файл?")) return;
+  try { await api(`file/${id}/delete`); await renderBook(); } catch (e) { alert(e.message); }
+}
+
+// ---------- почта (вариант 2): чтение и разбор всех своих ящиков ----------
+let mail = { boxes: [], box: "", unread: false, letters: [], openUid: null, replyTo: null };
+async function renderMail() {
+  $("vtitle").textContent = "Почта"; $("vcnt").textContent = "";
+  $("calnav").style.display = "none"; $("booknav").style.display = "none"; $("ctnav").style.display = "none"; $("mailnav").style.display = "none";
+  $("mailnav").style.display = "";
+  try {
+    const d = await api("mail/boxes");
+    mail.boxes = d.boxes;
+    $("mailboxes").innerHTML = mail.boxes.map(b =>
+      `<button class="tab ${mail.box === String(b.index) ? "on" : ""}" onclick="mailPick(${b.index})">${esc(b.name)}</button>`).join("");
+  } catch (e) { $("mailboxes").innerHTML = ""; }
+  if (mail.openUid) return renderLetter();
+  if (!mail.boxes.length) {
+    $("list").innerHTML = `<div class="empty">Ящики не подключены — нажмите «+ Ящик» и добавьте свой адрес (IMAP-сервер, логин, пароль приложения).</div>`;
+    return;
+  }
+  const q = `mail/list?box=${mail.box || (mail.boxes[0] || {}).index}` + (mail.unread ? "&unread=1" : "");
+  const d = await api(q);
+  mail.letters = d.letters;
+  $("list").innerHTML = mail.letters.length ? mail.letters.map(L =>
+    `<div class="task" style="cursor:pointer" onclick="openLetter('${L.uid}')">
+      <div class="t"><b style="${L.seen ? "" : "font-weight:800;color:var(--text)"};${L.seen ? "color:var(--muted)" : ""}">${esc(L.subject)}</b>
+      <div class="meta"><span class="badge src">${esc(L.from)}</span><span class="badge time">${esc((L.date || "").slice(0, 16))}</span>${L.seen ? "" : '<span class="badge carry">новое</span>'}</div></div></div>`).join("")
+    : `<div class="empty">${mail.unread ? "Непрочитанных писем нет" : "Писем нет"}</div>`;
+}
+function mailPick(i) { mail.box = String(i); mail.openUid = null; renderMail(); }
+function mailFilter(f) {
+  mail.unread = f === "unread";
+  $("mf-all").classList.toggle("on", !mail.unread);
+  $("mf-unread").classList.toggle("on", mail.unread);
+  mail.openUid = null; renderMail();
+}
+async function openLetter(uid) {
+  try {
+    const d = await api(`mail/letter?box=${mail.box || (mail.boxes[0] || {}).index}&uid=${uid}`);
+    mail.openUid = uid; mail.cur = d.letter;
+    const L = d.letter;
+    const bx = mail.box || (mail.boxes[0] || {}).index;
+    const atts = (L.attachments || []).map(a =>
+      `<a class="cta" href="#" onclick="event.preventDefault();window.open('/api/organizer/mail/att?box=${bx}&uid=${uid}&n=${a.n}','_blank')">📎 ${esc(a.name)} (${Math.round(a.size/1024)} КБ)</a>`).join("");
+    const ops = [`<button class="btn btn-ghost btn-sm" onclick="mailAct('${uid}','totask')">📌 Сделать задачей</button>`,
+      `<button class="btn btn-ghost btn-sm" onclick="openReply('${uid}')">↩ Ответить</button>`,
+      `<button class="btn btn-ghost btn-sm" onclick="mailAct('${uid}','${L.seen ? "unseen" : "seen"}')">${L.seen ? "Непрочитано" : "Прочитано"}</button>`,
+      `<button class="btn btn-ghost btn-sm" onclick="mailAct('${uid}','delete', true)">🗑 Удалить</button>`,
+      `<button class="btn btn-ghost btn-sm" onclick="mailAct('${uid}','spam', true)">🚫 В спам</button>`].join("");
+    $("list").innerHTML = `<div style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:8px">${ops}</div>
+      <b style="font-size:16px">${esc(L.subject)}</b>
+      <div class="who" style="margin:6px 0 10px">От: ${esc(L.from)} · Кому: ${esc(L.to)} · ${esc(L.date)}</div>
+      <div style="white-space:pre-wrap;font-size:14px">${esc(L.text) || '<span style="color:var(--muted)">Текста нет</span>'}</div>
+      ${atts ? `<div class="files" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${atts}</div>` : ""}
+      <div style="margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="mailBack()">← К списку писем</button></div>
+    </div>`;
+  } catch (e) { alert(e.message); }
+}
+function mailBack() { mail.openUid = null; renderMail(); }
+async function mailAct(uid, action, confirm_) {
+  if (confirm_ && !confirm(action === "delete" ? "Удалить письмо (в корзину ящика)?" : "Отметить как спам?")) return;
+  try {
+    await api(`mail/action`, { box: Number(mail.box || (mail.boxes[0] || {}).index), uid, action });
+    if (action === "totask") { alert("Письмо стало задачей — смотрите на вкладке «Задачи»"); mailBack(); return; }
+    mail.openUid = null; await renderMail();
+  } catch (e) { alert(e.message); }
+}
+function openReply(uid) {
+  const L = mail.cur || {};
+  mail.replyTo = uid;
+  $("mrTitle").textContent = "Ответ: " + (L.subject || "");
+  $("mrTo").textContent = "Кому: " + (L.from || "");
+  $("mr-text").value = ""; $("mrErr").style.display = "none";
+  openOv("ovReply");
+}
+async function sendReply() {
+  const text = $("mr-text").value.trim();
+  if (!text) return merr("mrErr", "Пустой ответ");
+  try {
+    await api(`mail/reply`, { box: Number(mail.box || (mail.boxes[0] || {}).index), uid: mail.replyTo, text });
+    closeOv(); alert("Ответ отправлен");
+  } catch (e) { merr("mrErr", e.message); }
+}
+function openNewBox() { ["b-name", "b-user", "b-pass"].forEach(i => $(i).value = ""); $("bErr").style.display = "none"; openOv("ovBox"); }
+async function saveBox() {
+  try {
+    await api(`mail/addbox`, { name: $("b-name").value, imap_host: $("b-host").value.trim(),
+                               imap_user: $("b-user").value.trim(), imap_pass: $("b-pass").value });
+    closeOv(); await renderMail();
+  } catch (e) { merr("bErr", e.message); }
+}
+
+// ---------- сканер ----------
+let scan = { pages: [], stream: null, cropSel: null, cropBase: null };
+async function startCam() {
+  try {
+    scan.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 2048 } } });
+    $("video").srcObject = scan.stream;
+    $("snapBtn").style.display = ""; $("camBtn").style.display = "none";
+  } catch (e) {
+    merr("scErr", "Камера недоступна (" + e.message + "). Используйте «Фото с камеры телефона» — это надёжно работает в любом случае.");
+  }
+}
+function openScan(noteId) {
+  scan = { pages: [], stream: null, cropSel: null, cropBase: null };
+  $("scan-name").value = "scan_" + today;
+  $("pages").innerHTML = ""; $("scErr").style.display = "none";
+  $("cropwrap").style.display = "none";
+  $("bookWrap").innerHTML = noteId
+    ? `<label><input type="checkbox" id="sc-book" data-note-id="${noteId}" checked> Прикрепить к открытой записи</label>`
+    : `<label><input type="checkbox" id="sc-book" checked> В книжку (новая запись с этим именем)</label>`;
+  openOv("scanOverlay");
+  startCam();
+}
+function stopScan() {
+  if (scan.stream) { scan.stream.getTracks().forEach(t => t.stop()); scan.stream = null; }
+  closeOv();
+}
+// модель страницы: src — исходник, отмасштабированный до 1600px; crop — доли 0..1 в координатах src;
+// итог = crop(src) → поворот → фильтр
+function scaledCanvas(src) {
+  const scale = Math.min(1, 1600 / Math.max(src.width, src.height));
+  const c = document.createElement("canvas");
+  c.width = Math.max(1, Math.round(src.width * scale));
+  c.height = Math.max(1, Math.round(src.height * scale));
+  c.getContext("2d").drawImage(src, 0, 0, c.width, c.height);
+  return c;
+}
+function renderPage(p) {
+  const x = p.crop ? p.crop.x : 0, y = p.crop ? p.crop.y : 0,
+        w = p.crop ? p.crop.w : 1, h = p.crop ? p.crop.h : 1;
+  const sw = p.src.width, sh = p.src.height;
+  const cut = document.createElement("canvas");
+  cut.width = Math.max(1, Math.round(w * sw)); cut.height = Math.max(1, Math.round(h * sh));
+  cut.getContext("2d").drawImage(p.src, x * sw, y * sh, w * sw, h * sh, 0, 0, cut.width, cut.height);
+  const fin = document.createElement("canvas");
+  fin.width = p.rot % 180 ? cut.height : cut.width;
+  fin.height = p.rot % 180 ? cut.width : cut.height;
+  const o = fin.getContext("2d");
+  o.translate(fin.width / 2, fin.height / 2); o.rotate(p.rot * Math.PI / 180);
+  o.filter = p.filter === "gray" ? "grayscale(1)" : p.filter === "text" ? "grayscale(1) contrast(1.9) brightness(1.12)" :
+             p.filter === "color" ? "saturate(1.5) contrast(1.25)" : "none";
+  o.drawImage(cut, -cut.width / 2, -cut.height / 2);
+  return fin;
+}
+function filePages(fl) {
+  [...fl].forEach(f => {
+    const img = new Image();
+    img.onload = () => { const p = { src: scaledCanvas(img), rot: 0, filter: "orig", crop: null }; scan.pages.push(p); afterPageChange(); };
+    img.src = URL.createObjectURL(f);
+  });
+}
+function snapPage() {
+  const v = $("video");
+  if (!v.videoWidth) return merr("scErr", "Камера ещё не готова");
+  const c = document.createElement("canvas"); c.width = v.videoWidth; c.height = v.videoHeight;
+  c.getContext("2d").drawImage(v, 0, 0);
+  scan.pages.push({ src: scaledCanvas(c), rot: 0, filter: "orig", crop: null });
+  afterPageChange();
+}
+function afterPageChange() {
+  editIdx = scan.pages.length - 1;
+  drawPages();
+  ["cropBtn", "rotBtn", "filterSel"].forEach(i => $(i).style.display = "");
+  $("cropBtn").textContent = "✂️ Кадрировать (стр. " + scan.pages.length + ")";
+}
+function drawPages() {
+  $("pages").innerHTML = scan.pages.map((p, i) =>
+    `<div class="page"><span class="no">${i + 1}</span><button class="del" onclick="delPage(${i})">×</button>
+     <canvas id="pg${i}" ondblclick="editPage(${i})"></canvas></div>`).join("");
+  scan.pages.forEach((p, i) => {
+    const el = $("pg" + i), out = renderPage(p);
+    el.width = out.width; el.height = out.height;
+    el.getContext("2d").drawImage(out, 0, 0);
+  });
+}
+function delPage(i) { scan.pages.splice(i, 1); if (editIdx >= scan.pages.length) editIdx = scan.pages.length - 1; drawPages(); if (!scan.pages.length) ["cropBtn", "rotBtn", "filterSel"].forEach(x => $(x).style.display = "none"); }
+let editIdx = 0;
+function editPage(i) {
+  editIdx = i;
+  $("filterSel").value = scan.pages[i].filter;
+  $("cropBtn").textContent = "✂️ Кадрировать (стр. " + (i + 1) + ")";
+}
+function rotPage() { const p = scan.pages[editIdx]; p.rot = (p.rot + 90) % 360; drawPages(); redrawCropBase(); }
+function applyFilter() { scan.pages[editIdx].filter = $("filterSel").value; drawPages(); redrawCropBase(); }
+// кадрирование делается по ИСХОДНИКУ страницы (до поворота и фильтра)
+function toggleCrop() {
+  const wrap = $("cropwrap");
+  wrap.style.display = wrap.style.display === "" ? "none" : "";
+  if (wrap.style.display === "none") return;
+  redrawCropBase();
+  const cc = $("cropCanvas");
+  cc.onmousedown = e => {
+    const r = cc.getBoundingClientRect();
+    scan.cropSel = { x0: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y0: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)), x1: 0, y1: 0, live: true };
+    cc.onmousemove = ev => {
+      const r2 = cc.getBoundingClientRect();
+      scan.cropSel.x1 = Math.min(1, Math.max(0, (ev.clientX - r2.left) / r2.width));
+      scan.cropSel.y1 = Math.min(1, Math.max(0, (ev.clientY - r2.top) / r2.height));
+      redrawCrop();
+    };
+  };
+  cc.onmouseup = () => { if (scan.cropSel) scan.cropSel.live = false; cc.onmousemove = null; };
+}
+function redrawCropBase() {
+  if ($("cropwrap").style.display === "none") return;
+  const p = scan.pages[editIdx], cc = $("cropCanvas");
+  cc.width = p.src.width; cc.height = p.src.height;
+  cc.getContext("2d").drawImage(p.src, 0, 0);
+  scan.cropBase = p.src;
+}
+function redrawCrop() {
+  const cc = $("cropCanvas"), x = cc.getContext("2d");
+  x.drawImage(scan.cropBase, 0, 0);
+  const s = scan.cropSel; if (!s) return;
+  x.strokeStyle = "#ff8c1a"; x.lineWidth = Math.max(2, cc.width / 400);
+  x.strokeRect(Math.min(s.x0, s.x1) * cc.width, Math.min(s.y0, s.y1) * cc.height,
+               Math.abs(s.x1 - s.x0) * cc.width, Math.abs(s.y1 - s.y0) * cc.height);
+}
+function applyCrop() {
+  const s = scan.cropSel, p = scan.pages[editIdx];
+  if (!s || Math.abs(s.x1 - s.x0) < 0.05 || Math.abs(s.y1 - s.y0) < 0.05) return;
+  p.crop = { x: Math.min(s.x0, s.x1), y: Math.min(s.y0, s.y1), w: Math.abs(s.x1 - s.x0), h: Math.abs(s.y1 - s.y0) };
+  drawPages();
+  merr("scErr", "");
+  $("cropwrap").style.display = "none";
+}
+async function saveScan() {
+  if (!scan.pages.length) return merr("scErr", "Сначала снимите или добавьте страницы");
+  const name = $("scan-name").value.trim() || "scan_" + today;
+  const bookChk = $("sc-book");
+  if (!bookChk.checked && !$("sc-down").checked && !$("sc-yadisk").checked)
+    return merr("scErr", "Выберите хотя бы одно место сохранения");
+  $("scSave").disabled = true; $("scSave").textContent = "Сохраняю…";
+  try {
+    const tokens = [];
+    for (const p of scan.pages) {
+      const blob = await new Promise(res => renderPage(p).toBlob(res, "image/jpeg", 0.85));
+      const r = await fetchRaw("scan/page", blob, "page.jpg");
+      tokens.push(r.token);
+    }
+    const r = await api("scan", { name, tokens, yadisk: $("sc-yadisk").checked,
+      to_note: bookChk.checked, note_id: Number(bookChk.dataset.noteId) || null });
+    if ($("sc-down").checked) window.open(fileUrl(r.pdf.id), "_blank");
+    const noteAttached = bookChk.checked && Number(bookChk.dataset.noteId) === book.noteId && book.sub === "note";
+    stopScan();
+    if (noteAttached) await renderBook();
+    else if (view === "book") await renderBook();
+    alert("Скан сохранён: " + name + ".pdf (" + tokens.length + " стр.)" + (r.yadisk_url ? "\nЯндекс.Диск: " + r.yadisk_url : ""));
+  } catch (e) { merr("scErr", e.message); }
+  finally { $("scSave").disabled = false; $("scSave").textContent = "Сохранить скан"; }
+}
+
+// ---------- события ----------
+$("tabs").addEventListener("click", e => {
+  const b = e.target.closest(".tab"); if (!b) return;
+  view = b.dataset.view;
+  document.querySelectorAll("#tabs .tab").forEach(x => x.classList.toggle("on", x === b));
+  load();
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeOv(); });
+document.querySelectorAll(".overlay").forEach(o => o.addEventListener("click", e => { if (e.target === o) closeOv(); }));
+
+// старт
+(async () => {
+  cal.date = today = iso(new Date());
+  try { const a = await api("access"); document.title = "Органайзер — " + (a.name || "RVA"); } catch (e) {}
+  await loadContacts();
+  await load();
+})();
+setInterval(load, 5 * 60 * 1000);
+// PWA: сервис-воркер — чтобы «На экран “Домой”» открывалось как приложение
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/organizer-sw.js").catch(() => {});
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "telegram": {
+    "token": "",
+    "enabled": true
+  },
+  "max": {
+    "token": "",
+    "enabled": true
+  },
+  "vision": {
+    "baseUrl": "https://vision-ai.example/api/paas/v4",
+    "apiKey": "",
+    "model": "glm-4.6v"
+  },
+  "procenka": {
+    "url": "http://127.0.0.1:8766",
+    "fallbackSupplierWeb": true,
+    "botKey": ""
+  },
+  "levels": {
+    "guest_markup": 1.2,
+    "guest_rows": 10
+  },
+  "site": {
+    "url": "",
+    "procenka_public_url": ""
+  }
+}

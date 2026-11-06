@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Главная страница</title>
+<style>
+  :root{
+    --bg:#0d1b2a; --bg2:#13263c; --panel:#16293f; --line:#24405d;
+    --steel:#1b3a5c; --accent:#ff8c1a; --accent2:#f77f00;
+    --text:#e9eff6; --muted:#9db0c4;
+    --w:1200px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+  .wrap{max-width:var(--w);margin:0 auto;padding:0 24px}
+  a{color:inherit;text-decoration:none}
+  .kicker{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+  .kicker::before{content:"";display:inline-block;width:26px;height:3px;background:var(--accent);margin-right:10px;vertical-align:middle}
+  h2{font-size:32px;line-height:1.2;margin-bottom:12px}
+  .sub{color:var(--muted);max-width:640px}
+
+  /* header */
+  header{position:sticky;top:0;z-index:50;background:rgba(13,27,42,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;min-height:72px;flex-wrap:wrap;gap:8px}
+  .logo{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px;letter-spacing:.04em}
+  .logo-badge{width:38px;height:38px;background:linear-gradient(135deg,var(--accent2),#ffb566);border-radius:8px;display:grid;place-items:center;color:#0d1b2a;font-size:15px;font-weight:900}
+  .logo small{display:block;font-size:10px;font-weight:500;color:var(--muted);letter-spacing:.18em}
+  nav.menu{display:flex;gap:26px;font-size:14px;color:var(--muted)}
+  nav.menu a:hover{color:var(--text)}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;border:0;transition:.2s}
+  .btn-acc{background:var(--accent);color:#12100c}
+  .btn-acc:hover{background:#ffa047}
+  .btn:disabled, .btn:disabled:hover{background:#465362;color:#93a0ad;cursor:not-allowed}
+  .modal .consent{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;line-height:1.45;margin-top:14px}
+  .modal .consent input{width:15px;height:15px;flex:0 0 auto;margin-top:2px;accent-color:var(--accent)}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .nav .btn{padding:10px 18px}
+  #userbox{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
+  /* подсказка тем, кто при регистрации указал только имя, — исчезает после заполнения профиля в кабинете */
+  .profile-hint{font-size:13px;font-weight:400;color:var(--muted);line-height:1.35;max-width:340px}
+  @media(max-width:700px){.profile-hint{max-width:none;flex-basis:100%}}
+
+  /* hero */
+  .hero{position:relative;background:
+    radial-gradient(900px 420px at 85% -10%,rgba(255,140,26,.13),transparent 60%),
+    linear-gradient(180deg,#0e2036 0%,var(--bg) 100%);
+    border-bottom:1px solid var(--line);overflow:hidden}
+  .hero::after{content:"";position:absolute;inset:auto 0 0 0;height:6px;
+    background:repeating-linear-gradient(-45deg,var(--accent) 0 14px,#0d1b2a 14px 28px);opacity:.85}
+  .hero .wrap{padding:88px 24px 96px;position:relative}
+  .hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:stretch}
+  .hero h1{font-size:40px;line-height:1.15;margin-bottom:18px}
+  .hero h1 em{font-style:normal;color:var(--accent)}
+  .hero p{font-size:17px;color:var(--muted);margin-bottom:30px}
+  .hero-btns{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:6px}
+  .hero-btns .btn{justify-content:center;padding:16px 24px;font-size:15px}
+  .hero-btns .btn[disabled]{opacity:.45;cursor:default}
+  .hero-btns .btn[disabled]:hover{background:transparent;color:var(--text);border-color:var(--line)}
+  .feedbox{position:relative;display:flex;flex-direction:column;min-height:720px;background:rgba(19,38,60,.55);border:1px solid var(--line);border-radius:12px;padding:20px 0 8px 24px}
+  .feedbox .feed-title{font-size:15px;font-weight:800;margin-bottom:14px;padding-right:24px}
+  .feed-add{position:absolute;top:14px;right:16px;width:32px;height:32px;border-radius:50%;border:0;background:var(--accent);color:#12100c;font-size:20px;font-weight:800;line-height:1;cursor:pointer;transition:.2s}
+  .feed-add:hover{background:#ffa047;transform:scale(1.08)}
+  .feed-scroll{flex:1 1 0;min-height:0;overflow-y:auto;scrollbar-width:none;padding-right:14px}
+  .feed-scroll::-webkit-scrollbar{display:none}
+  .feed-bar{position:absolute;top:16px;bottom:16px;right:6px;width:7px;background:rgba(19,38,60,.75);border-radius:4px;z-index:5}
+  .feed-thumb{position:absolute;top:0;right:0;width:7px;min-height:44px;background:#3a6ea5;border:1px solid #0d1b2a;border-radius:4px;cursor:grab;touch-action:none}
+  .feed-thumb:hover{background:var(--accent)}
+  .feedbox .feed-item{padding:11px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+  .feedbox .feed-item:last-child{border-bottom:0}
+  .feedbox .feed-item b{display:block;margin-bottom:4px}
+  .feedbox .feed-item span{color:var(--muted);display:block;white-space:pre-line}
+  .feedbox .feed-item .feed-img{display:block;max-width:100%;max-height:480px;width:auto;margin:6px auto;border-radius:10px}
+  .feedbox .feed-item a.feed-imglink{display:block;text-align:center}
+  .feedbox .feed-empty{color:var(--muted);font-size:14px}
+  .stats{display:flex;gap:0;margin-top:64px;border:1px solid var(--line);border-radius:12px;background:rgba(19,38,60,.55);overflow:hidden}
+  .stat{flex:1;padding:22px 26px;border-left:1px solid var(--line)}
+  .stat:first-child{border-left:0}
+  .stat b{display:block;font-size:30px;color:var(--accent)}
+  .stat span{font-size:13px;color:var(--muted)}
+
+  /* brands */
+  .brands{padding:38px 0;border-bottom:1px solid var(--line);background:var(--bg2)}
+  .brands-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+  .brand{padding:10px 20px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-weight:700;font-size:15px;color:#c8d6e5;letter-spacing:.02em}
+  .brands-note{text-align:center;color:var(--muted);font-size:13px;margin-bottom:18px}
+
+  /* services */
+  section{padding:84px 0}
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:40px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px;transition:.2s}
+  .card:hover{border-color:var(--accent);transform:translateY(-3px)}
+  .card .ico{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--steel),#27507d);display:grid;place-items:center;margin-bottom:18px;font-size:22px}
+  .card h3{font-size:17px;margin-bottom:8px}
+  .card p{font-size:14px;color:var(--muted)}
+
+  /* why */
+  .why{background:linear-gradient(180deg,var(--bg2),var(--bg));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px}
+  .why-item{border-left:3px solid var(--accent);padding:6px 0 6px 22px}
+  .why-item h3{font-size:18px;margin-bottom:8px}
+  .why-item p{color:var(--muted);font-size:15px}
+  .vs{margin-top:44px;display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .vs>div{border:1px solid var(--line);border-radius:12px;padding:24px}
+  .vs .bad h4{color:var(--muted)} .vs .good{border-color:rgba(255,140,26,.5)}
+  .vs .good h4{color:var(--accent)}
+  .vs h4{font-size:15px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+  .vs p{font-size:14px;color:var(--muted)}
+
+  /* audiences */
+  .aud-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px}
+  .aud{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;gap:16px;align-items:flex-start}
+  .aud .ico{font-size:26px;line-height:1}
+  .aud h3{font-size:16px;margin-bottom:4px}
+  .aud p{font-size:13px;color:var(--muted)}
+  .b2c{margin-top:18px;background:linear-gradient(90deg,rgba(255,140,26,.12),transparent 65%);border:1px dashed rgba(255,140,26,.45);border-radius:12px;padding:22px 26px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+  .b2c h3{font-size:17px} .b2c p{color:var(--muted);font-size:14px}
+
+  /* about */
+  .about{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center}
+  .about-list{list-style:none;margin-top:22px}
+  .about-list li{padding:13px 0;border-bottom:1px solid var(--line);display:flex;gap:14px;font-size:15px}
+  .about-list li::before{content:"✓";color:var(--accent);font-weight:800}
+  .quote{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:34px;position:relative}
+  .quote::before{content:"“";position:absolute;top:6px;left:20px;font-size:80px;color:var(--accent);opacity:.35;font-family:Georgia,serif}
+  .quote p{font-size:17px;color:#d7e2ee;padding-top:24px}
+  .quote .who{margin-top:18px;color:var(--muted);font-size:13px}
+
+  /* контакты */
+  form{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:32px}
+  input,select,textarea{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:13px 16px;color:var(--text);font-size:14px;font-family:inherit}
+  input:focus,textarea:focus{outline:none;border-color:var(--accent)}
+  textarea{grid-column:1/-1;min-height:96px;resize:vertical}
+  form .btn{grid-column:1/-1;justify-content:center}
+  .form-note{grid-column:1/-1;color:var(--muted);font-size:12px}
+  .ok{grid-column:1/-1;color:#7dd97b;font-size:14px;display:none}
+
+  /* боты в мессенджерах */
+  .bots{border-top:1px solid var(--line);background:var(--bg2);padding:40px 0}
+  .bots h2{font-size:22px;margin-bottom:18px}
+  .qrcards{display:flex;gap:20px;flex-wrap:wrap}
+  .qrcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:8px;max-width:220px;text-align:center}
+  .qrcard img{width:170px;height:170px;border-radius:8px;background:#fff}
+  .qrcard b{font-size:14px}
+  .qrcard span{font-size:12px;color:var(--muted)}
+
+  footer{border-top:1px solid var(--line);padding:34px 0;color:var(--muted);font-size:13px}
+  .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .foot .reqs{display:flex;flex-direction:column;gap:3px;text-align:right;max-width:640px}
+  .foot .reqs b{color:var(--text)}
+  .foot .reqs a{color:var(--accent)}
+
+  /* вход / регистрация */
+  .overlay{position:fixed;inset:0;background:rgba(5,12,20,.72);display:none;align-items:center;justify-content:center;z-index:200;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .overlay.open{display:flex}
+  .modal{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:26px;width:100%;max-width:420px;margin:auto}
+  .modal h3{font-size:20px;margin-bottom:6px}
+  .modal label{display:block;font-size:12px;color:var(--muted);margin:12px 0 4px}
+  .modal input{width:100%}
+  .modal .row{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
+  .modal .err{display:none;font-size:13px;margin-top:12px}
+  .tabs{display:flex;gap:8px;margin-bottom:4px}
+  .tabs button{flex:1;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:8px;cursor:pointer;font-family:inherit;font-size:13px}
+  .tabs button.on{border-color:var(--accent);color:var(--accent);font-weight:700}
+
+  @media(max-width:960px){
+    nav.menu{display:none}
+    .hero h1{font-size:32px}
+    .hero-grid{grid-template-columns:1fr;gap:30px}
+    .hero-left,.feedbox{order:2}
+    .feedbox{height:420px;padding:16px 0 6px 18px}
+    .feed-scroll{padding-right:14px}
+    .cards,.why-grid,.aud-grid{grid-template-columns:1fr 1fr}
+    .about,.vs{grid-template-columns:1fr}
+    .stats{flex-direction:column}
+    .stat{border-left:0;border-top:1px solid var(--line)}
+    form{grid-template-columns:1fr}
+  }
+  @media(max-width:560px){.cards,.why-grid,.aud-grid{grid-template-columns:1fr}}
+  .logo-img{width:40px;height:40px;border-radius:8px;display:block}
+  /* бегущие окна в шапке: текст непрерывно поднимается, наведение останавливает */
+  .rollw{position:relative;height:415px;overflow:hidden;background:var(--bg2);border:1px solid var(--line);border-radius:14px;margin-top:16px;box-shadow:0 14px 34px rgba(0,0,0,.4)}
+  .rollw::before,.rollw::after{content:"";position:absolute;left:0;right:0;height:56px;z-index:2;pointer-events:none}
+  .rollw::before{top:0;background:linear-gradient(var(--bg2),rgba(19,38,60,0))}
+  .rollw::after{bottom:0;background:linear-gradient(rgba(19,38,60,0),var(--bg2))}
+  .rollw-in{animation:rollw-up 48s linear infinite;padding:18px 24px}
+  .rollw:hover .rollw-in{animation-play-state:paused}
+  @keyframes rollw-up{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+  @media (prefers-reduced-motion:reduce){.rollw-in{animation:none}}
+  .rollw-lead{font-size:15.5px;font-weight:700;line-height:1.5;color:#ffd9ae;padding-bottom:14px;border-bottom:1px dashed var(--line);margin-bottom:14px}
+  .rollw-lead b{color:var(--accent)}
+  .rollw-block{margin-bottom:14px}
+  .rollw-block h4{margin:0 0 4px;font-size:13.5px;font-weight:800;color:var(--accent);letter-spacing:.02em}
+  .rollw-block p{margin:0;font-size:13.5px;line-height:1.5;color:#cdd9e6}
+  .rollw-hint{position:absolute;right:14px;bottom:12px;z-index:3;font-size:11px;color:var(--muted);background:rgba(19,38,60,.9);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+  .rollw-arrows{display:flex;justify-content:center;align-items:center;gap:6px;height:46px}
+  .rollw-arrows i{width:13px;height:13px;border-right:3px solid var(--accent);border-bottom:3px solid var(--accent);animation:rollw-down 1.6s ease-in-out infinite;opacity:.4}
+  .rollw-arrows i:nth-child(2){animation-delay:.25s}
+  .rollw-arrows i:nth-child(3){animation-delay:.5s}
+  .rollw-arrows.up i{border-right:0;border-bottom:0;border-left:3px solid var(--accent);border-top:3px solid var(--accent);animation-name:rollw-up-flow}
+  @keyframes rollw-down{0%,100%{opacity:.25;transform:translateY(-3px) rotate(45deg)}50%{opacity:1;transform:translateY(3px) rotate(45deg)}}
+  @keyframes rollw-up-flow{0%,100%{opacity:.25;transform:translateY(3px) rotate(-135deg)}50%{opacity:1;transform:translateY(-3px) rotate(-135deg)}}
+  @media (prefers-reduced-motion:reduce){.rollw-arrows i{animation:none}}
+  .hero-right{display:flex;flex-direction:column}
+  .hero-right .rollw:last-of-type{flex:1;height:auto;min-height:415px}
+  /* «глазок» у полей пароля: показать / скрыть введённое */
+  .pw{position:relative;display:block}
+  .pw input{padding-right:46px !important}
+  .pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;display:grid;place-items:center;background:none;border:0;border-radius:6px;color:var(--muted);cursor:pointer;padding:0}
+  .pw-eye:hover{color:var(--text)}
+  .pw-eye[aria-pressed="true"]{color:var(--accent)}
+  .pw-eye:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  .pw-eye svg{width:20px;height:20px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="#">
+      <img class="logo-img" src="/logo.png" alt="RVA161">
+      <span>ГСМ-ЭКСПЕРТ<small>СМАЗОЧНЫЕ МАТЕРИАЛЫ · 25 ЛЕТ</small></span>
+    </a>
+    <nav class="menu">
+      <a href="#services">Услуги</a>
+      <a href="#why">Почему мы</a>
+      <a href="#aud">Отраслям</a>
+      <a href="#about">Обо мне</a>
+      <a href="#contacts">Консультация</a>
+      <a href="#site-footer">Контакты</a>
+    </nav>
+    <span id="userbox"><button class="btn btn-acc" onclick="openModal('auth')">Вход / Регистрация</button></span>
+  </div>
+</header>
+
+<div style="text-align:center;padding:16px 12px 0">
+  <a class="btn btn-acc" href="/portfolio" title="Портфолио: автоматизация бизнес-процессов с помощью ИИ" style="font-size:16px;padding:16px 34px;box-shadow:0 0 30px rgba(255,140,26,.5);display:inline-block">🤖 Автоматизация бизнес-процессов с помощью ИИ</a>
+</div>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="feedbox">
+        <div class="feed-title">📰 Лента новостей<button class="feed-add" id="feedAdd" title="Добавить новость" onclick="openNewsEditor()" style="display:none">+</button></div>
+        <div class="feed-scroll" id="feedList"><span class="feed-empty">Новостей пока нет</span></div>
+      <div class="feed-bar" id="feedBar"><div class="feed-thumb" id="feedThumb"></div></div>
+      </div>
+      <div class="hero-right">
+        <span class="kicker">Независимый эксперт по смазочным материалам · 25 лет в продаже и подборе смазочных материалов</span>
+        <h1>Смазочные материалы для вашей техники — <em>без переплат и привязки к бренду</em></h1>
+        <div class="hero-btns">
+          <a class="btn btn-acc" href="/poisk">Проценка запасных частей</a>
+        </div>
+        <div class="rollw-arrows" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="rollw" aria-label="Бегущая строка о проценке запасных частей">
+          <div class="rollw-in">
+          <div class="rollw-set">
+            <div class="rollw-lead"><b>Один артикул — десятки предложений.</b> Выбирайте лучшее за 3 секунды: система сама сравнит аналоги и кроссы — экономия на закупке до 25%.</div>
+            <div class="rollw-block">
+              <h4>🚀 Скорость и прозрачность</h4>
+              <p>Все поставщики — в одном окне, без Excel и десятка вкладок. Вводите артикул — через секунду таблица предложений: от самого дешёвого аналога до оригинала со склада в вашем городе. Сроки, остатки и цены отфильтрованы автоматически. Видна реальная цена закупки у каждого — без ошибок менеджеров и ручного переноса.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>📄 Список на ТО — одним файлом</h4>
+              <p>Массовая загрузка артикулов (XLS/CSV): загрузите 20–50 позиций — получите один общий отчёт с лучшими ценами по всем поставщикам.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>📊 Контроль и аналитика</h4>
+              <p>Управляйте маржинальностью, а не просто закупайте. История проценок по каждому артикулу: вы точно знаете, у кого закупает ваш отдел и не завышена ли итоговая цена для клиента.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>🤝 Выгода и партнёрство</h4>
+              <p>Ваши остатки и цены — первыми в выдаче, 24/7. Покупатель видит ваше предложение и заказывает в один клик. Спрос виден в реальном времени — склад и оборачиваемость планируются точнее.</p>
+            </div>
+            <div class="rollw-block" style="margin-bottom:0">
+              <h4>🔍 Мгновенные кроссы</h4>
+              <p>Система сама подскажет, если деталь от другого бренда подходит и на 30% дешевле. Руководитель видит всю картину закупок.</p>
+            </div>
+          </div>
+          <div class="rollw-set" aria-hidden="true">
+            <div class="rollw-lead"><b>Один артикул — десятки предложений.</b> Выбирайте лучшее за 3 секунды: система сама сравнит аналоги и кроссы — экономия на закупке до 25%.</div>
+            <div class="rollw-block">
+              <h4>🚀 Скорость и прозрачность</h4>
+              <p>Все поставщики — в одном окне, без Excel и десятка вкладок. Вводите артикул — через секунду таблица предложений: от самого дешёвого аналога до оригинала со склада в вашем городе. Сроки, остатки и цены отфильтрованы автоматически. Видна реальная цена закупки у каждого — без ошибок менеджеров и ручного переноса.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>📄 Список на ТО — одним файлом</h4>
+              <p>Массовая загрузка артикулов (XLS/CSV): загрузите 20–50 позиций — получите один общий отчёт с лучшими ценами по всем поставщикам.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>📊 Контроль и аналитика</h4>
+              <p>Управляйте маржинальностью, а не просто закупайте. История проценок по каждому артикулу: вы точно знаете, у кого закупает ваш отдел и не завышена ли итоговая цена для клиента.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>🤝 Выгода и партнёрство</h4>
+              <p>Ваши остатки и цены — первыми в выдаче, 24/7. Покупатель видит ваше предложение и заказывает в один клик. Спрос виден в реальном времени — склад и оборачиваемость планируются точнее.</p>
+            </div>
+            <div class="rollw-block" style="margin-bottom:0">
+              <h4>🔍 Мгновенные кроссы</h4>
+              <p>Система сама подскажет, если деталь от другого бренда подходит и на 30% дешевле. Руководитель видит всю картину закупок.</p>
+            </div>
+          </div>
+          </div>
+          <span class="rollw-hint">наведите — остановится</span>
+        </div>
+        <div class="hero-btns" style="margin-top:18px">
+          <a class="btn btn-acc" href="#contacts">Консультация и Аудит</a>
+        </div>
+        <div class="rollw-arrows up" aria-hidden="true"><i></i><i></i><i></i></div>
+        <!-- ОКНО «КОНСУЛЬТАЦИЯ И АУДИТ»: текст по файлу директора от 22.10.2026 -->
+        <div class="rollw" aria-label="Бегущая строка о консультациях и аудите">
+          <div class="rollw-in">
+          <div class="rollw-set">
+            <div class="rollw-lead"><b>Экспертный аудит и консалтинг по смазочным материалам.</b> Меня зовут Редькин Владимир Анатольевич: 25 лет в отрасли — путь от менеджера до независимого эксперта. Я не просто продаю масло — я понимаю механику вашего бизнеса.</div>
+            <div class="rollw-block">
+              <h4>🎓 Обучение персонала</h4>
+              <p>Готовлю механиков, операторов и инженеров к правильной работе с ГСМ. Ошибки при нанесении и хранении стоят дороже самого масла — сложные регламенты объясняю простым языком, понятным линейному персоналу.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>📋 Технический аудит на предприятии</h4>
+              <p>Глубокая ревизия применения смазочных материалов на заводах, в автопарках и агрохолдингах: условия хранения, логистика перемещения, фактическая применяемость масел в узлах и чистота процедур замены — а не только «бочка в цеху».</p>
+            </div>
+            <div class="rollw-block">
+              <h4>🤝 Работа со всеми игроками рынка</h4>
+              <p>Плотный опыт и с мировыми брендами, и с независимыми производителями: объективные решения без маркетинговых наценок вендоров и оптимальные аналоги без потери качества.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>💰 Сокращение затрат</h4>
+              <p>Выявляю избыточный расход, утечки и «перелив». Оптимизация склада: часто на предприятии хранится 50 видов масел, из которых реально используются 10.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>🔧 Ресурс техники и меньше аварий</h4>
+              <p>Подбор масел под реальные нагрузки, температуры и условия эксплуатации — а не по каталогу. Узлы на грани отказа видны по состоянию масла ещё до поломки детали.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>📊 Прозрачная отчётность</h4>
+              <p>Понятные рекомендации для руководства с экономическим обоснованием (ROI) каждого изменения: затраты на ГСМ превращаются в инвестицию в ресурс оборудования.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>❓ Когда пора пригласить эксперта?</h4>
+              <p>Дорогие оригинальные масла, а техника ломается как на дешёвых · затраты на ГСМ растут, а прозрачности в списании нет · механики игнорируют современные стандарты · планируете импортозамещение и хотите быть уверены в совместимости.</p>
+            </div>
+            <div class="rollw-block" style="margin-bottom:0">
+              <h4>📞 Формат работы</h4>
+              <p>Очные аудиты в Ростове-на-Дону и регионах, консультации технических служб по видеосвязи. Первичная консультация и предварительный анализ ваших спецификаций — <b style="color:var(--accent)">бесплатно</b>.</p>
+            </div>
+          </div>
+          <div class="rollw-set" aria-hidden="true">
+            <div class="rollw-lead"><b>Экспертный аудит и консалтинг по смазочным материалам.</b> Меня зовут Редькин Владимир Анатольевич: 25 лет в отрасли — путь от менеджера до независимого эксперта. Я не просто продаю масло — я понимаю механику вашего бизнеса.</div>
+            <div class="rollw-block">
+              <h4>🎓 Обучение персонала</h4>
+              <p>Готовлю механиков, операторов и инженеров к правильной работе с ГСМ. Ошибки при нанесении и хранении стоят дороже самого масла — сложные регламенты объясняю простым языком, понятным линейному персоналу.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>📋 Технический аудит на предприятии</h4>
+              <p>Глубокая ревизия применения смазочных материалов на заводах, в автопарках и агрохолдингах: условия хранения, логистика перемещения, фактическая применяемость масел в узлах и чистота процедур замены — а не только «бочка в цеху».</p>
+            </div>
+            <div class="rollw-block">
+              <h4>🤝 Работа со всеми игроками рынка</h4>
+              <p>Плотный опыт и с мировыми брендами, и с независимыми производителями: объективные решения без маркетинговых наценок вендоров и оптимальные аналоги без потери качества.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>💰 Сокращение затрат</h4>
+              <p>Выявляю избыточный расход, утечки и «перелив». Оптимизация склада: часто на предприятии хранится 50 видов масел, из которых реально используются 10.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>🔧 Ресурс техники и меньше аварий</h4>
+              <p>Подбор масел под реальные нагрузки, температуры и условия эксплуатации — а не по каталогу. Узлы на грани отказа видны по состоянию масла ещё до поломки детали.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>📊 Прозрачная отчётность</h4>
+              <p>Понятные рекомендации для руководства с экономическим обоснованием (ROI) каждого изменения: затраты на ГСМ превращаются в инвестицию в ресурс оборудования.</p>
+            </div>
+            <div class="rollw-block">
+              <h4>❓ Когда пора пригласить эксперта?</h4>
+              <p>Дорогие оригинальные масла, а техника ломается как на дешёвых · затраты на ГСМ растут, а прозрачности в списании нет · механики игнорируют современные стандарты · планируете импортозамещение и хотите быть уверены в совместимости.</p>
+            </div>
+            <div class="rollw-block" style="margin-bottom:0">
+              <h4>📞 Формат работы</h4>
+              <p>Очные аудиты в Ростове-на-Дону и регионах, консультации технических служб по видеосвязи. Первичная консультация и предварительный анализ ваших спецификаций — <b style="color:var(--accent)">бесплатно</b>.</p>
+            </div>
+          </div>
+          </div>
+          <span class="rollw-hint">наведите — остановится</span>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+<div class="brands">
+  <div class="wrap">
+    <div class="brands-note">Работаю с ведущими производителями</div>
+    <div class="brands-row">
+      <span class="brand">Mobil</span><span class="brand">Total</span><span class="brand">Shell</span>
+      <span class="brand">Лукойл</span><span class="brand">Роснефть</span><span class="brand">ТАИФ</span><span class="brand">Fuchs</span><span class="brand">и др.</span>
+    </div>
+  </div>
+</div>
+
+<section id="services">
+  <div class="wrap">
+    <span class="kicker">Услуги</span>
+    <h2>Что делаю для предприятий и частных владельцев</h2>
+    <p class="sub">От разовой поставки масла до выстраивания всей системы смазки на предприятии.</p>
+    <div class="cards">
+      <div class="card"><div class="ico">🛢️</div><h3>Продажа смазочных материалов</h3><p>Моторные, трансмиссионные, гидравлические, индустриальные масла и спецжидкости ведущих брендов.</p></div>
+      <div class="card"><div class="ico">🎯</div><h3>Подбор масла под задачу</h3><p>Подбор по технике, режимам работы и бюджету. Оптимальное соотношение цены и ресурса, а не «что завезли».</p></div>
+      <div class="card"><div class="ico">📋</div><h3>Аудит применения ГСМ</h3><p>Обследование парка техники и склада ГСМ: находим перерасход, несовместимые продукты, лишние позиции.</p></div>
+      <div class="card"><div class="ico">🎓</div><h3>Обучение персонала</h3><p>Обучаю механиков и снабженцев предприятий правильной работе со смазочными материалами.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="why" id="why">
+  <div class="wrap">
+    <span class="kicker">Почему независимый эксперт</span>
+    <h2>Объективный подбор — вместо продажи «своего» бренда</h2>
+    <div class="why-grid">
+      <div class="why-item"><h3>Не импортёр</h3><p>Не привязан к одному производителю — поэтому рекомендую то, что реально лучше решает задачу клиента.</p></div>
+      <div class="why-item"><h3>Все сильные бренды</h3><p>Работаю и с ведущими производителями (Mobil, Shell, Total), и с нишевыми заводами — под конкретную потребность.</p></div>
+      <div class="why-item"><h3>Интересы клиента</h3><p>Подбор под задачу и бюджет предприятия, а не под остатки на складе поставщика.</p></div>
+    </div>
+    <div class="vs">
+      <div class="bad"><h4>Поставщик одного бренда</h4><p>«Наше масло сделано из лучшего базового масла» — продаёт то, что у него есть. Альтернативы не покажет.</p></div>
+      <div class="good"><h4>Независимый эксперт</h4><p>Сравниваю продукты разных производителей по характеристикам и цене — и предлагаю оптимальный вариант для вашей техники.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="aud">
+  <div class="wrap">
+    <span class="kicker">Отраслям</span>
+    <h2>Кому это нужно</h2>
+    <div class="aud-grid">
+      <div class="aud"><span class="ico">🏭</span><div><h3>Промышленные заводы</h3><p>Индустриальные масла, редукторные и гидравлические жидкости для производства.</p></div></div>
+      <div class="aud"><span class="ico">🚛</span><div><h3>Автопарки и логистика</h3><p>Масла для грузового транспорта, увеличение интервалов обслуживания.</p></div></div>
+      <div class="aud"><span class="ico">🚜</span><div><h3>Сельхозпредприятия</h3><p>Смазка техники в сезон без простоев: колхозы, агрофирмы, фермерские хозяйства.</p></div></div>
+      <div class="aud"><span class="ico">🏗️</span><div><h3>Стройка и спецтехника</h3><p>Парки экскаваторов, погрузчиков, кранов — тяжёлые режимы и требования к маслам.</p></div></div>
+      <div class="aud"><span class="ico">🔧</span><div><h3>Автосервисы и СТО</h3><p>Поставки масел и техническая поддержка по подбору для клиентов сервиса.</p></div></div>
+      <div class="aud"><span class="ico">⛽</span><div><h3>Автотранспортные компании</h3><p>Системный подход к ГСМ: от норм расхода до обучения механиков.</p></div></div>
+    </div>
+    <div class="b2c">
+      <div><h3>Частным автовладельцам</h3><p>Подберу масло для личного авто или техники — честно, без навязывания дорогих брендов.</p></div>
+      <button class="btn btn-ghost" onclick="scrollTo_('contacts')">Подобрать для авто</button>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="wrap about">
+    <div>
+      <span class="kicker">Обо мне</span>
+      <h2>Эксперт, которого зовут на предприятия</h2>
+      <ul class="about-list">
+        <li>25 лет работаю в сфере продаж смазочных материалов</li>
+        <li>Обучал персонал предприятий работе со смазочными материалами</li>
+        <li>Проводил аудит применения ГСМ на заводах, автопредприятиях и сельхозпредприятиях</li>
+        <li>Работаю с ведущими брендами и независимыми производителями</li>
+      </ul>
+    </div>
+    <div class="quote">
+      <p>Производители масел — это нефтедобывающие компании: каждый скажет, что его базовое масло лучшее. Я не связан ни с одним из них — поэтому сопоставляю продукты разных брендов по фактам и подбираю лучший под вашу задачу.</p>
+      <div class="who">— эксперт по смазочным материалам, опыт 25 лет</div>
+    </div>
+  </div>
+</section>
+
+<section id="contacts">
+  <div class="wrap">
+    <span class="kicker">Консультация</span>
+    <h2>Оставьте заявку на консультацию</h2>
+    <p class="sub">Опишите технику и задачу — отвечу и предложу варианты. <br>Регион работы: <b style="color:var(--text)">[указать регион]</b> · Телефон: <b style="color:var(--text)">[+7 ___ ___-__-__]</b> · Почта: <b style="color:var(--text)">[email]</b></p>
+    <form onsubmit="return sent(event)">
+      <input required placeholder="Ваше имя">
+      <input required placeholder="Телефон или e-mail">
+      <select><option>Интересует: подбор масла</option><option>Интересует: аудит ГСМ на предприятии</option><option>Интересует: поставка смазочных материалов</option><option>Интересует: обучение персонала</option></select>
+      <input placeholder="Тип техники / количество единиц">
+      <textarea placeholder="Опишите задачу: техника, режимы работы, что используете сейчас…"></textarea>
+      <span class="form-note">Нажимая кнопку, вы соглашаетесь на обработку персональных данных.</span>
+      <button class="btn btn-acc" type="submit">Отправить заявку</button>
+      <span class="ok" id="okMsg">✓ Заявка отправлена (демо-режим — форма подключается к почте/CRM)</span>
+    </form>
+  </div>
+</section>
+
+<section class="bots">
+  <div class="wrap">
+    <h2>Наши боты в мессенджерах</h2>
+    <div class="qrcards">
+      <div class="qrcard">
+        <img src="/qr_max.png" alt="QR: бот Prodobrey в MAX" onerror="this.parentElement.style.display='none'">
+        <b>Бот Prodobrey в MAX</b>
+        <span>Новости, проценка, вопросы — всегда в телефоне</span>
+      </div>
+      <div class="qrcard">
+        <img src="/qr_tg.png" alt="QR: бот в Telegram" onerror="this.parentElement.style.display='none'">
+        <b>Бот в Telegram</b>
+        <span>Тот же сервис в другом мессенджере</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="site-footer">
+  <div class="wrap foot">
+    <span>© 2026 ГСМ-ЭКСПЕРТ — независимый эксперт по смазочным материалам</span>
+    <div class="reqs">
+      <b>ИП Редькин Владимир Анатольевич</b>
+      <span>ИНН 616101960804 · ОГРНИП 317619600033223</span>
+      <span>346866, Россия, Ростовская обл., Неклиновский р-н, х. Морской Чулек, тер. ТСН СНТ Металлург-3, дом 282</span>
+      <span><a href="mailto:info@vredkin.ru">info@vredkin.ru</a> · <a href="tel:+79282797207">8-928-279-72-07</a></span>
+    </div>
+  </div>
+</footer>
+
+<!-- ======== вход / регистрация ======== -->
+<div class="overlay" id="ov-auth">
+  <div class="modal">
+    <h3 id="authTitle">Вход</h3>
+    <div class="tabs" id="aTabs">
+      <button class="on" id="tabLogin" onclick="authTab('login')">Вход</button>
+      <button id="tabReg" onclick="authTab('reg')">Регистрация</button>
+    </div>
+    <div id="aForm">
+    <div id="aNameWrap" style="display:none">
+      <label>Фамилия</label>
+      <input id="aSurname" placeholder="Фамилия">
+      <label>Имя (обязательно)</label>
+      <input id="aName" placeholder="Как к вам обращаться">
+      <label>Отчество</label>
+      <input id="aPatronymic" placeholder="Отчество">
+    </div>
+    <label>Email (он же логин)</label>
+    <input id="aLogin" placeholder="you@mail.ru">
+    <label>Телефон — по нему бот MAX привяжет аккаунт и будет отвечать на вопросы</label>
+    <input id="aPhone" placeholder="Введите номер телефона">
+    <label>Пароль</label>
+      <input id="aPass" type="password" placeholder="Ваш пароль">
+      <div id="aPass2Wrap" style="display:none">
+        <label>Повторите пароль</label>
+        <input id="aPass2" type="password" placeholder="Ещё раз пароль" onkeydown="if(event.key==='Enter')authGo()">
+      </div>
+      <label class="consent" id="aConsentWrap" style="display:none">
+        <input type="checkbox" id="aConsent" onchange="document.getElementById('authGoBtn').disabled = authMode === 'reg' && !this.checked">
+        <span>Я даю согласие на обработку персональных данных (ФИО, email, телефон) — для регистрации и работы аккаунта.</span>
+      </label>
+      <div class="err" id="aErr"></div>
+      <div class="row">
+        <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+        <button class="btn btn-acc" id="authGoBtn" onclick="authGo()">Войти</button>
+      </div>
+    </div>
+    <div id="aSent" style="display:none">
+      <div class="sub" id="aSentHint"></div>
+      <div class="muted" style="margin-top:8px">Если письма нет во входящих — проверьте папку «Спам». Ссылка действует 24 часа.</div>
+      <div class="err" id="aSentErr"></div>
+      <div class="row">
+        <button class="btn btn-ghost" onclick="resendLink()">Письмо ещё раз</button>
+        <button class="btn btn-acc" onclick="closeModal()">Готово</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- редактор новости в ленту (кнопка «+», только с доступом) -->
+<div class="overlay" id="ov-news">
+  <div class="modal">
+    <h3>Новая запись в ленту</h3>
+    <div class="form-note" style="margin:0 0 4px">Картинку вставьте из буфера (⌘V / Ctrl+V) прямо в окно или выберите файлом.</div>
+    <div style="border:1px dashed var(--line);border-radius:10px;padding:10px;text-align:center;cursor:pointer" onclick="document.getElementById('newsFile').click()">
+      <img id="newsImgPrev" style="display:none;max-width:100%;max-height:300px;border-radius:8px;margin:0 auto" alt="">
+      <span id="newsImgHint" style="color:var(--muted);font-size:13px">🖼 Вставьте картинку (⌘V) или нажмите, чтобы выбрать файл</span>
+    </div>
+    <input type="file" id="newsFile" accept="image/*" style="display:none" onchange="newsImgFromFile(this.files[0])">
+    <textarea id="newsText" style="width:100%;min-height:110px;margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--text);font-family:inherit;font-size:14px" placeholder="Текст новости — вставьте (⌘V) или напишите"></textarea>
+    <div class="err" id="newsErr"></div>
+    <div class="row">
+      <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+      <button class="btn btn-acc" id="newsGo" onclick="publishNews()">Опубликовать</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function scrollTo_(id){document.getElementById(id).scrollIntoView({behavior:'smooth'});return false}
+function sent(e){e.preventDefault();document.getElementById('okMsg').style.display='block';return false}
+
+// ---------- вход / регистрация (сервер проценки, тот же аккаунт на весь проект) ----------
+let me = null, authMode = 'login', pendingLogin = '', orgOk = false;
+function esc(s){const d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML}
+async function loadMe(){
+  try{
+    const r = await fetch('/api/auth/me');
+    me = (await r.json()).user;
+  }catch(e){ me = null; }
+  orgOk = false;
+  if (me) { try{ orgOk = (await fetch('/api/organizer/access')).ok; }catch(e){} }
+  renderUserbox();
+}
+function renderUserbox(){
+  const box = document.getElementById('userbox');
+  const orgBtn = orgOk ? '<a class="btn btn-ghost" style="padding:8px 14px" href="/organizer">Органайзер</a>' : '';
+  const fa = document.getElementById('feedAdd');
+  if (fa) fa.style.display = (me && orgOk) ? '' : 'none';   // «+» в ленте — тем же кругом доступа
+  if (!me) {
+    box.innerHTML = '<button class="btn btn-acc" onclick="openModal(\'auth\')">Вход / Регистрация</button>';
+  } else {
+    const pend = me.approved ? '' : ' <span style="color:#ffd479">· ждёт подтверждения</span>';
+    // «Кабинет» — личный кабинет (у директора там же таблица пользователей и доступа)
+    const cabBtn = '<a class="btn btn-ghost" style="padding:8px 14px" href="/кабинет">Кабинет</a>';
+    const hint = (me.role !== 'admin' && !me.surname)
+      ? '<span class="profile-hint">Для работы с полным функционалом сайта заполните недостающие данные в личном кабинете.</span>'
+      : '';
+    box.innerHTML = cabBtn + orgBtn + pend +
+                    '<button class="btn btn-ghost" style="padding:8px 14px" onclick="doLogout()">Выйти</button>' + hint;
+  }
+}
+
+// ---------- редактор новости в ленту («+», раздел 1 ТЗ органайзера) ----------
+let newsImage = null;   // dataURL уже уменьшенной картинки
+function openNewsEditor(){
+  if (!me || !orgOk) { alert('Добавление новостей доступно только с доступом 5-го уровня.'); return; }
+  newsImage = null;
+  document.getElementById('newsImgPrev').style.display = 'none';
+  document.getElementById('newsImgHint').style.display = '';
+  document.getElementById('newsText').value = '';
+  document.getElementById('newsErr').style.display = 'none';
+  openModal('news');
+}
+// вставка картинки из буфера работает, пока открыт редактор
+document.addEventListener('paste', e => {
+  const ov = document.getElementById('ov-news');
+  if (!ov || !ov.classList.contains('open')) return;
+  const items = [...((e.clipboardData || {}).items || [])];
+  const img = items.find(i => i.type && i.type.startsWith('image/'));
+  if (img) { e.preventDefault(); newsImgFromFile(img.getAsFile()); }
+});
+function newsImgFromFile(file){
+  if (!file || !file.type.startsWith('image/')) return;
+  const r = new FileReader();
+  r.onload = () => {
+    const done = dataUrl => {
+      newsImage = dataUrl;
+      const p = document.getElementById('newsImgPrev');
+      p.src = dataUrl; p.style.display = 'block';
+      document.getElementById('newsImgHint').style.display = 'none';
+    };
+    // крупные сканы уменьшаем до 1600px по длинной стороне — и вес, и вид в ленте
+    const probe = new Image();
+    probe.onload = () => {
+      const MAX = 1600;
+      if (Math.max(probe.width, probe.height) <= MAX && file.size < 700*1024) return done(r.result);
+      const k = Math.min(1, MAX / Math.max(probe.width, probe.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(probe.width*k); c.height = Math.round(probe.height*k);
+      c.getContext('2d').drawImage(probe, 0, 0, c.width, c.height);
+      done(c.toDataURL('image/jpeg', 0.85));
+    };
+    probe.src = r.result;
+  };
+  r.readAsDataURL(file);
+}
+async function publishNews(){
+  const text = document.getElementById('newsText').value.trim();
+  const err = document.getElementById('newsErr');
+  if (!text && !newsImage){ err.textContent = 'Добавьте изображение или текст'; err.style.display = 'block'; return; }
+  const btn = document.getElementById('newsGo'); btn.disabled = true;
+  try {
+    const r = await fetch('/api/news/add', { method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, image: newsImage }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || ('Ошибка ' + r.status));
+    closeModal();
+    await loadFeed();
+  } catch (e) {
+    err.textContent = 'Не удалось опубликовать: ' + e.message; err.style.display = 'block';
+  } finally { btn.disabled = false; }
+}
+async function doLogout(){
+  await fetch('/api/auth/logout', { method: 'POST' });
+  me = null; renderUserbox();
+}
+function openModal(which){
+  document.getElementById('ov-' + which).classList.add('open');
+  if (which === 'auth') { resetAuthView(); authTab('login'); hideAuthErr(); }
+}
+function closeModal(){ document.querySelectorAll('.overlay').forEach(o => o.classList.remove('open')); resetAuthView(); hidePasswords(); }
+function hideAuthErr(){ const e = document.getElementById('aErr'); e.style.display = 'none'; }
+function authTab(md){
+  authMode = md;
+  document.getElementById('tabLogin').classList.toggle('on', md === 'login');
+  document.getElementById('tabReg').classList.toggle('on', md === 'reg');
+  document.getElementById('authTitle').textContent = md === 'login' ? 'Вход' : 'Регистрация';
+  document.getElementById('authGoBtn').textContent = md === 'login' ? 'Войти' : 'Зарегистрироваться';
+  const reg = md === 'reg';
+  document.getElementById('aNameWrap').style.display = reg ? '' : 'none';
+  document.getElementById('aPass2Wrap').style.display = reg ? '' : 'none';
+  document.getElementById('aConsentWrap').style.display = reg ? 'flex' : 'none';
+  document.getElementById('authGoBtn').disabled = reg && !document.getElementById('aConsent').checked;
+}
+async function authGo(){
+  if (authMode === 'reg' && !document.getElementById('aConsent').checked) return;  // без согласия регистрация не отправляется
+  const login = document.getElementById('aLogin').value.trim();
+  const password = document.getElementById('aPass').value;
+  if (authMode === 'login' && (!login || !password)) { const e = document.getElementById('aErr'); e.textContent = 'Введите email и пароль'; e.style.display = 'block'; return; }
+  const name = document.getElementById('aName').value.trim();
+  const surname = document.getElementById('aSurname').value.trim();
+  const patronymic = document.getElementById('aPatronymic').value.trim();
+  const phone = document.getElementById('aPhone').value.trim();
+  const pass2 = document.getElementById('aPass2').value;
+  const err = document.getElementById('aErr');
+  err.style.display = 'none'; err.style.color = '#ffb1b1';
+  if (authMode === 'reg') {
+    if (!name) { err.textContent = 'Укажите имя (обязательно)'; err.style.display = 'block'; return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login)) { err.textContent = 'Укажите email — он же логин'; err.style.display = 'block'; return; }
+    if (!phone) { err.textContent = 'Укажите телефон — по нему бот будет отвечать на вопросы'; err.style.display = 'block'; return; }
+    if (password !== pass2) { err.textContent = 'Пароли не совпадают'; err.style.display = 'block'; return; }
+  }
+  const r = await fetch('/api/auth/' + (authMode === 'login' ? 'login' : 'register'), {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ login, password, name, surname, patronymic, phone })
+  });
+  const d = await r.json();
+  if (!r.ok || d.error) {
+    err.textContent = d.pending ? d.error + ' — повторите вход после подтверждения администратором' : (d.error || 'Ошибка');
+    err.style.display = 'block';
+    if (d.pending) setTimeout(closeModal, 5000);   // 5 секунд — успеть прочитать, что письмо может лежать в «Спаме»
+    return;
+  }
+  if (authMode === 'reg') { showSentStep(login, d.dev_link); return; }   // после регистрации показываем шаг «письмо отправлено», не закрывая окно
+  await loadMe();
+  closeModal();
+}
+function showSentStep(login, devLink){
+  pendingLogin = login;
+  document.getElementById('aTabs').style.display = 'none';
+  document.getElementById('aForm').style.display = 'none';
+  document.getElementById('aSent').style.display = '';
+  const hint = document.getElementById('aSentHint');
+  hint.innerHTML = '✉️ Письмо со ссылкой для подтверждения отправлено на <b>' + esc(login) + '</b>.' +
+    ' Перейдите по ссылке из письма — это подтвердит ваш email. Ссылка действует 24 часа.';
+  if (devLink) {
+    hint.innerHTML += '<br><span style="color:#ffd479">Тестовый режим: <a href="' + devLink + '">подтвердить сейчас</a></span>';
+  }
+}
+function resetAuthView(){
+  document.getElementById('aTabs').style.display = '';
+  document.getElementById('aForm').style.display = '';
+  document.getElementById('aSent').style.display = 'none';
+  document.getElementById('aSentErr').style.display = 'none';
+  pendingLogin = '';
+}
+function sentErr(msg, ok){
+  const err = document.getElementById('aSentErr');
+  err.style.color = ok ? '#7dd97b' : '#ffb1b1';
+  err.textContent = msg; err.style.display = 'block';
+}
+async function resendLink(){
+  const r = await fetch('/api/auth/resend', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ login: pendingLogin })
+  });
+  const d = await r.json();
+  if (!r.ok || d.error) { sentErr(d.error || 'Ошибка'); return; }
+  sentErr(d.message + (d.dev_link ? ' · тестовая ссылка выше обновлена' : ''), true);
+  if (d.dev_link) showSentStep(pendingLogin, d.dev_link);
+}
+
+// ---------- лента новостей в левой части главной ----------
+async function loadFeed(){
+  try{
+    const r = await fetch('/api/news');
+    const items = (await r.json()).news || [];
+    if (!items.length) return; // остаётся «Новостей пока нет»
+    const box = document.getElementById('feedList');
+    box.innerHTML = items.map(n =>
+      `<div class="feed-item">` +
+      `${n.date ? `<span>🗓 ${esc(n.date)}</span>` : ''}` +
+      `${n.image ? `<img class="feed-img" src="${esc(n.image)}" alt="">` : ''}` +
+      `${n.title ? `<b>${esc(n.title)}</b>` : ''}` +
+      `${n.text ? `<span>${esc(n.text)}</span>` : ''}` +
+      `</div>`
+    ).join('');
+    box.querySelectorAll('img').forEach(im => im.addEventListener('load', feedScrollUI));
+    feedScrollUI();
+  }catch(e){ /* лента недоступна — остаётся заглушка */ }
+}
+
+// ---------- собственный ползунок прокрутки ленты (всегда виден, можно таскать) ----------
+function feedScrollUI(){
+  const sc = document.getElementById('feedList');
+  const bar = document.getElementById('feedBar');
+  const th  = document.getElementById('feedThumb');
+  if (!sc || !bar || !th) return;
+  const trackH = bar.clientHeight;
+  const maxOff = sc.scrollHeight - sc.clientHeight;
+  if (maxOff <= 2) { bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  const thH = Math.max(44, trackH * sc.clientHeight / sc.scrollHeight);
+  th.style.height = thH + 'px';
+  th.style.top = (trackH - thH) * (sc.scrollTop / maxOff) + 'px';
+}
+(function(){
+  const sc = document.getElementById('feedList');
+  const bar = document.getElementById('feedBar');
+  const th  = document.getElementById('feedThumb');
+  if (!sc || !bar || !th) return;
+  sc.addEventListener('scroll', feedScrollUI);
+  window.addEventListener('resize', feedScrollUI);
+  let drag = null;
+  th.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    th.setPointerCapture(e.pointerId);
+    drag = { y: e.clientY, top: sc.scrollTop };
+  });
+  th.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const trackH = bar.clientHeight, thH = th.clientHeight;
+    const maxOff = sc.scrollHeight - sc.clientHeight;
+    if (maxOff <= 0 || trackH <= thH) return;
+    const dy = e.clientY - drag.y;
+    sc.scrollTop = Math.max(0, Math.min(maxOff, drag.top + dy * maxOff / (trackH - thH)));
+  });
+  const drop = () => drag = null;
+  th.addEventListener('pointerup', drop);
+  th.addEventListener('pointercancel', drop);
+})();
+// ---------- «глазок» у полей пароля (как на странице проценки) ----------
+const EYE_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6C3.9 8.3 2 12 2 12s3.5 7 10 7c1.6 0 3-.4 4.3-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+function addPasswordEyes(root){
+  (root || document).querySelectorAll('input[type="password"]:not([data-eye])').forEach(inp => {
+    inp.dataset.eye = '1';
+    const wrap = document.createElement('span');
+    wrap.className = 'pw';
+    inp.parentNode.insertBefore(wrap, inp);
+    wrap.appendChild(inp);
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'pw-eye';
+    b.setAttribute('aria-label', 'Показать пароль'); b.setAttribute('aria-pressed', 'false'); b.title = 'Показать пароль';
+    b.innerHTML = EYE_ON;
+    b.onclick = () => {
+      const show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      b.setAttribute('aria-pressed', String(show));
+      b.title = show ? 'Скрыть пароль' : 'Показать пароль';
+      b.setAttribute('aria-label', b.title);
+      b.innerHTML = show ? EYE_OFF : EYE_ON;
+      inp.focus();
+    };
+    wrap.appendChild(b);
+  });
+}
+// при закрытии окна пароли снова скрываются
+function hidePasswords(){
+  document.querySelectorAll('input[data-eye]').forEach(inp => {
+    inp.type = 'password';
+    const b = inp.parentNode.querySelector('.pw-eye');
+    if (b) { b.setAttribute('aria-pressed', 'false'); b.title = 'Показать пароль'; b.setAttribute('aria-label', b.title); b.innerHTML = EYE_ON; }
+  });
+}
+addPasswordEyes();
+loadFeed();
+loadMe();
+</script>
+</body>
+</html>

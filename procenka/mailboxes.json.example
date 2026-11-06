@@ -1,0 +1,9 @@
+[
+  {
+    "имя": "рабочий info@",
+    "imap_host": "imap.yandex.ru",
+    "imap_user": "info@vredkin.ru",
+    "imap_pass": "ПАРОЛЬ_ПРИЛОЖЕНИЯ_ЯНДЕКСА",
+    "владелец": "admin"
+  }
+]

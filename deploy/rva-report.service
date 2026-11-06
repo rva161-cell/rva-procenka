@@ -1,0 +1,6 @@
+[Unit]
+Description=RVA — ежедневный отчёт директору в 09:00 (пользователи, проценки, сервер)
+
+[Service]
+Type=oneshot
+ExecStart=/opt/rva/deploy/daily_report.sh

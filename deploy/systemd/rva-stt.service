@@ -1,0 +1,35 @@
+[Unit]
+Description=RVA — распознавание голоса, локальный whisper (127.0.0.1:8767)
+After=network-online.target rva-procenka.service
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Service]
+User=rva
+Group=rva
+WorkingDirectory=/opt/rva/procenka
+Environment=HOME=/opt/rva
+Environment=PYTHONUNBUFFERED=1
+MemoryMax=3G
+ExecStart=/opt/rva/bot/venv/bin/python -u stt_server.py
+Restart=always
+RestartSec=5
+# --- песочница: служба видит систему только для чтения, писать может только в /opt/rva ---
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/opt/rva
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RestrictRealtime=yes
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

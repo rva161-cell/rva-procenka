@@ -1,0 +1,49 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+bot/venv/
+
+# Node
+node_modules/
+
+# Секреты — не выкладывать в git и не пересылать
+bot/.env
+bot/config.json
+procenka/.env
+procenka/suppliers.json
+procenka/users.json
+
+# Персональные данные и рабочее состояние (живут только на сервере)
+procenka/data.db
+procenka/data.db-*
+procenka/backups/
+procenka/*.json.migrated
+procenka/close_people.json
+procenka/organizer_people.json
+procenka/registrations.json
+procenka/email_outbox.json
+procenka/referrals.json
+procenka/questions.json
+procenka/lenta_state.json
+bot/lenta_state.json
+procenka/prices/*
+!procenka/prices/пример_прайса.csv
+
+# Рабочие папки с картинками и мусор — не часть кода
+корзина/
+артикул_бот_old/
+Scrin/
+Lenta/
+procenka/server.log
+procenka/mailboxes.json
+Organizer/files/
+bot/data.db
+/server.log
+procenka/stt.log
+procenka/browser_profiles/
+
+# журналы служб — не часть кода
+*.log

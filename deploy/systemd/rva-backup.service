@@ -1,0 +1,27 @@
+[Unit]
+Description=RVA — зашифрованная резервная копия базы и настроек на Яндекс.Диск
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=rva
+Group=rva
+WorkingDirectory=/opt/rva
+Environment=HOME=/opt/rva
+ExecStart=/usr/bin/python3 /opt/rva/deploy/backup_offsite.py
+# --- песочница: служба видит систему только для чтения, писать может только в /opt/rva ---
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/opt/rva
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RestrictRealtime=yes
+UMask=0077

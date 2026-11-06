@@ -1,0 +1,10 @@
+[Unit]
+Description=RVA — ежедневный отчёт в 09:00 (догоняет после простоя)
+
+[Timer]
+OnCalendar=*-*-* 09:00:00
+Persistent=true
+Unit=rva-report.service
+
+[Install]
+WantedBy=timers.target

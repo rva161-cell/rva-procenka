@@ -1,0 +1,113 @@
+# RVA — сайт, проценка, органайзер. Шаблон: __DOMAIN__ заменяет 5_setup_nginx.sh.
+# Программа слушает только 127.0.0.1:8766; наружу её открывает этот nginx — с HTTPS,
+# ограничением частоты запросов и вторым паролем на служебные разделы.
+
+limit_req_zone $binary_remote_addr zone=rva_login:10m rate=10r/m;   # вход и регистрация
+limit_req_zone $binary_remote_addr zone=rva_api:10m   rate=60r/m;   # поиск у поставщиков
+limit_req_zone $binary_remote_addr zone=rva_all:10m   rate=20r/s;   # всё остальное
+limit_req_status 429;
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name __DOMAIN__ www.__DOMAIN__;
+    server_tokens off;
+    location /.well-known/acme-challenge/ { root /var/www/certbot; }
+    location / { return 301 https://__DOMAIN__$request_uri; }
+}
+
+server {
+    listen 443 ssl http2;          # совместимо с nginx 1.24 (Ubuntu 24.04)
+    listen [::]:443 ssl http2;
+    server_name __DOMAIN__ www.__DOMAIN__;
+    server_tokens off;
+
+    ssl_certificate     /etc/letsencrypt/live/__DOMAIN__/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/__DOMAIN__/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    ssl_session_cache shared:RVA_SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    client_max_body_size 30m;          # файлы органайзера — до 25 МБ
+    access_log /var/log/nginx/rva.access.log;
+    error_log  /var/log/nginx/rva.error.log;
+
+    # www → без www
+    if ($host = www.__DOMAIN__) { return 301 https://__DOMAIN__$request_uri; }
+
+    # служебные адреса ботов — только изнутри сервера (боты ходят на 127.0.0.1:8766 напрямую)
+    location ^~ /api/bot/      { return 404; }
+    location = /api/question   { return 404; }
+
+    # вход и регистрация — не чаще 10 попыток в минуту с адреса (+ fail2ban банит перебор)
+    location ~ ^/api/auth/(login|register|resend)$ {
+        limit_req zone=rva_login burst=5 nodelay;
+        include /etc/nginx/snippets/rva-headers.conf;
+        include /etc/nginx/snippets/rva-proxy.conf;
+    }
+
+    # поиск у поставщиков — 60 запросов в минуту с адреса
+    location ~ ^/api/(search|brands)$ {
+        limit_req zone=rva_api burst=30 nodelay;
+        include /etc/nginx/snippets/rva-headers.conf;
+        include /etc/nginx/snippets/rva-proxy.conf;
+    }
+
+    # ---- служебные разделы: вход в программу ИЛИ второй пароль (nginx) ----
+    # при сделанном входе в программу второй пароль не спрашивается (нет всплывающего окна
+    # при переходах между страницами); без входа окно остаётся запасным замком
+    # проверка живого входа в программу (внутренняя — снаружи отдаёт 404).
+    # ВАЖНО: X-Real-IP обязателен — сессия привязана к адресу входа, и без него
+    # подзапрос пришёл бы к программе с 127.0.0.1 и был бы погашен как «чужой»
+    location = /_rva_session {
+        internal;
+        proxy_pass http://127.0.0.1:8766/api/auth/check;
+        proxy_pass_request_body off;
+        proxy_set_header Content-Length "";
+        proxy_set_header Cookie $http_cookie;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+    location ~ ^/(organizer|automation)(/|$) {
+        satisfy any;
+        auth_request /_rva_session;
+        include /etc/nginx/snippets/rva-admin-auth.conf;
+        include /etc/nginx/snippets/rva-headers.conf;
+        include /etc/nginx/snippets/rva-proxy.conf;
+    }
+    location ~ ^/api/(admin|organizer)/ {
+        satisfy any;
+        auth_request /_rva_session;
+        include /etc/nginx/snippets/rva-admin-auth.conf;
+        include /etc/nginx/snippets/rva-headers.conf;
+        include /etc/nginx/snippets/rva-proxy.conf;
+    }
+    location ~ ^/api/(suppliers/browser-login|news/add)$ {
+        satisfy any;
+        auth_request /_rva_session;
+        include /etc/nginx/snippets/rva-admin-auth.conf;
+        include /etc/nginx/snippets/rva-headers.conf;
+        include /etc/nginx/snippets/rva-proxy.conf;
+    }
+    # список поставщиков читать можно после входа в программу; менять — тоже (второй пароль
+    # остаётся запасным замком для изменений без входа)
+    location = /api/suppliers {
+        satisfy any;
+        auth_request /_rva_session;
+        limit_except GET {
+            auth_basic "RVA - служебный раздел";
+            auth_basic_user_file /etc/nginx/rva.htpasswd;
+        }
+        include /etc/nginx/snippets/rva-headers.conf;
+        include /etc/nginx/snippets/rva-proxy.conf;
+    }
+
+    # всё остальное: сайт, страница проценки, личный кабинет пользователей
+    location / {
+        limit_req zone=rva_all burst=60 nodelay;
+        include /etc/nginx/snippets/rva-headers.conf;
+        include /etc/nginx/snippets/rva-proxy.conf;
+    }
+}

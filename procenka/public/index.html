@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Проценка поставщиков — рабочая программа</title>
+<style>
+  :root{
+    --bg:#0d1b2a; --bg2:#13263c; --panel:#16293f; --line:#24405d;
+    --steel:#1b3a5c; --accent:#ff8c1a; --accent2:#f77f00;
+    --text:#e9eff6; --muted:#9db0c4;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+  .wrap{max-width:1500px;margin:0 auto;padding:0 24px}
+  .kicker{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+  .kicker::before{content:"";display:inline-block;width:26px;height:3px;background:var(--accent);margin-right:10px;vertical-align:middle}
+  h2{font-size:24px;margin-bottom:10px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;border:0;transition:.2s;font-family:inherit}
+  .btn-acc{background:var(--accent);color:#12100c}
+  .btn-acc:hover{background:#ffa047}
+  .btn:disabled, .btn:disabled:hover{background:#465362;color:#93a0ad;cursor:not-allowed}
+  .modal .consent{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;line-height:1.45;margin-top:14px}
+  .modal .consent input{width:15px;height:15px;flex:0 0 auto;margin-top:2px;accent-color:var(--accent)}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-sm{padding:6px 12px;font-size:12.5px;border-radius:7px}
+
+  header{position:sticky;top:0;z-index:50;background:rgba(13,27,42,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:64px;gap:14px}
+  .logo{display:flex;align-items:center;gap:12px;font-weight:800;font-size:18px}
+  .logo-badge{width:36px;height:36px;background:linear-gradient(135deg,var(--accent2),#ffb566);border-radius:8px;display:grid;place-items:center;color:#0d1b2a;font-size:14px;font-weight:900}
+  .logo small{display:block;font-size:10px;color:var(--muted);letter-spacing:.16em;font-weight:500}
+  .userbox{display:flex;align-items:center;gap:10px;font-size:13px}
+  .userbox .who{color:var(--muted)}
+  .userbox .who b{color:var(--text)}
+  .rolechip{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:2px 9px;color:var(--muted)}
+  .rolechip.admin{border-color:rgba(255,140,26,.5);color:var(--accent)}
+
+  .hero{padding:26px 0 4px}
+  .hero p{color:var(--muted);max-width:860px;font-size:14px}
+
+  /* сетка: сайдбар + контент */
+  .layout{display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start;margin-top:20px}
+  .sidebar{background:var(--bg2);border:1px solid var(--line);border-radius:12px;position:sticky;top:80px;max-height:calc(100vh - 100px);overflow:auto}
+  .sidebar .head{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .sidebar .head b{font-size:14px}
+  .side-sec{border-bottom:1px solid var(--line)}
+  .side-sec>.t{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);cursor:pointer;user-select:none}
+  .side-sec>.t:hover{color:var(--text)}
+  .side-sec>.t .arr{transition:.2s;font-size:10px}
+  .side-sec.closed>.t .arr{transform:rotate(180deg)}
+  .side-sec .body{padding:2px 16px 14px}
+  .side-sec.closed .body{display:none}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 13px;font-size:12px;cursor:pointer;font-family:inherit;transition:.15s}
+  .chip:hover{border-color:var(--accent);color:var(--accent)}
+  .chip.on{background:rgba(255,140,26,.14);border-color:var(--accent);color:var(--accent);font-weight:600}
+  .ck{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text);padding:4px 0;cursor:pointer}
+  .ck input{accent-color:var(--accent)}
+  .ck .n{color:var(--muted);font-size:11.5px;margin-left:auto}
+  .minput{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:8px 10px;color:var(--text);font-size:13px;font-family:inherit;margin-top:6px}
+  .minput:focus{outline:none;border-color:var(--accent)}
+  .pair{display:flex;gap:8px}
+  .tplrow{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px}
+  .tplrow .nm{flex:1;cursor:pointer;color:var(--text)}
+  .tplrow .nm:hover{color:var(--accent)}
+  .tplrow .del{background:none;border:0;color:var(--muted);cursor:pointer;font-size:13px}
+  .tplrow .del:hover{color:#ff8f8f}
+
+  /* контент */
+  .content{min-width:0}
+  /* срок платного доступа к проценке — полоса под шапкой */
+  .accessbar{display:none;text-align:center;font-size:14px;padding:9px 16px;border-bottom:1px solid var(--line);background:rgba(255,140,26,.08);color:var(--text)}
+  .accessbar.show{display:block}
+  .accessbar b{color:var(--accent);font-size:15px}
+  .accessbar.low{background:rgba(255,196,0,.12)}
+  .accessbar.off{background:rgba(255,107,107,.12);color:#ffb1b1}
+  /* логотип RVA161 в шапке */
+  .logo-img{width:40px;height:40px;border-radius:8px;display:block}
+  /* наценка для гостей (только админ) */
+  .markup{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);border:1px solid var(--line);border-radius:9px;padding:6px 10px;background:var(--panel)}
+  .markup input{width:62px;background:transparent;border:1px solid var(--line);border-radius:6px;color:var(--text);padding:5px 7px;font-size:14px;font-weight:700;text-align:right;font-family:inherit}
+  .markup input:focus{outline:none;border-color:var(--accent)}
+  .markup .ok{color:var(--good,#5bd17a);font-size:12px;display:none}
+  .markup .ok.show{display:inline}
+  /* «Мои поставщики» — список по алфавиту, галочка слева = опрашивается у незарегистрированных */
+  .suplist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:6px}
+  .suprow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+  .suprow:last-child{border-bottom:0}
+  .suprow.off{opacity:.55}
+  .suprow input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
+  .suprow .nm b{font-size:14px}
+  .suprow .meta{color:var(--muted);font-size:12px;word-break:break-all}
+  .suprow .meta .dot{display:inline-block;vertical-align:middle;margin-right:5px}
+  .suprow .acts{display:flex;gap:6px;align-items:center}
+  .suprow .del{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 6px;border-radius:6px}
+  .layout.solo{grid-template-columns:1fr}  /* гость: боковой панели нет — содержимое на всю ширину */
+  /* «глазок» у полей пароля: показать / скрыть введённое */
+  .pw{position:relative;display:block}
+  .pw input{padding-right:46px !important}
+  .pw-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;display:grid;place-items:center;background:none;border:0;border-radius:6px;color:var(--muted);cursor:pointer;padding:0}
+  .pw-eye:hover{color:var(--text)}
+  .pw-eye[aria-pressed="true"]{color:var(--accent)}
+  .pw-eye:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  .pw-eye svg{width:20px;height:20px}
+  .sups{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+  .sup{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .sup .top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px}
+  .sup b{font-size:14.5px}
+  .sup .site{color:var(--muted);font-size:12px;word-break:break-all}
+  .sup .st{font-size:11.5px;display:inline-flex;align-items:center;gap:7px;margin-top:7px}
+  .dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+  .dot.ok{background:#7dd97b}.dot.err{background:#ff6b6b}.dot.nokey{background:#ffc43c}.dot.skip{background:#9db0c4}
+  .sup .del{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 6px;border-radius:6px}
+  .sup .del:hover{color:#ff8f8f;background:rgba(255,107,107,.1)}
+  .supbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:0 0 12px;flex-wrap:wrap}
+  .supbar .lbl{font-size:13px;color:var(--muted)}
+
+  .searchbar{display:flex;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;box-shadow:0 14px 34px rgba(0,0,0,.28)}
+  .searchbar input{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px;padding:8px 14px;font-family:inherit}
+  .searchbar input::placeholder{color:#5f7188}
+
+  .hints{background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-top:10px;overflow:hidden;display:none}
+  .hints.open{display:block}
+  .hints .h{padding:10px 16px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
+  .hint-row{display:flex;align-items:center;gap:16px;width:100%;text-align:left;background:transparent;border:0;border-bottom:1px solid #1d3450;padding:12px 16px;color:var(--text);font-size:14px;cursor:pointer;font-family:inherit}
+  .hint-row:last-child{border-bottom:0}
+  .hint-row:hover{background:rgba(255,140,26,.07)}
+  .searchbar{position:relative}
+  .recent{position:absolute;left:14px;right:14px;top:calc(100% + 6px);z-index:40;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 14px 34px rgba(0,0,0,.45)}
+  .recent-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;font-size:14px;color:var(--text);font-family:inherit}
+  .recent-item:hover{background:rgba(255,140,26,.07)}
+  .recent-item b{color:var(--accent)}
+  .recent-item .m{margin-left:auto;font-size:12px;color:var(--muted)}
+  .hint-row .art{font-weight:700;color:var(--accent);flex:0 0 auto;min-width:90px;font-variant-numeric:tabular-nums}
+  .hint-row .br{font-weight:600;flex:0 0 auto;min-width:140px}
+  .hint-row .nm{color:var(--muted);flex:1}
+
+  .controls{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:16px 0 12px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .seg button{background:transparent;border:0;color:var(--muted);padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:600}
+  .seg button.on{background:var(--accent);color:#12100c}
+  .guestnote{font-size:12.5px;color:var(--muted)}
+  .guestnote a{color:var(--accent);cursor:pointer;text-decoration:underline}
+
+  .statline{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;display:none}
+  .statline.show{display:flex}
+  .st-pill{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:5px 12px;color:var(--muted);display:inline-flex;gap:7px;align-items:center}
+  .st-pill.err{border-color:rgba(255,107,107,.4);color:#ffb1b1;cursor:help}
+  .st-pill.skip{cursor:help}
+
+  .tbl-wrap{border:1px solid var(--line);border-radius:12px;overflow:auto;background:var(--panel);display:none}
+  .tbl-wrap.show{display:block}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:900px}
+  thead th{background:#1a3049;text-align:left;padding:12px 14px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);white-space:nowrap}
+  tbody td{padding:11px 14px;border-bottom:1px solid #1d3450;vertical-align:middle}
+  tbody tr:hover{background:rgba(255,140,26,.05)}
+  tbody tr:last-child td{border-bottom:0}
+  td .br{font-weight:700}
+  td .art{color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+  /* корзина: переход на сайт поставщика строки для оформления заказа */
+  td.cartcol,th.cartcol{width:1%;text-align:center}
+  .cartbtn{display:inline-grid;place-items:center;width:36px;height:36px;border:1px solid var(--line);border-radius:9px;color:var(--accent);background:transparent;text-decoration:none}
+  .cartbtn:hover{border-color:var(--accent);background:rgba(255,140,26,.08)}
+  .cartbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  /* «Проверенные поставщики» */
+  .verlist{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:6px}
+  .verlist a{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--panel);color:var(--text);text-decoration:none}
+  .verlist a:last-child{border-bottom:0}
+  .verlist a:hover{background:rgba(255,140,26,.07)}
+  .verlist .u{color:var(--muted);font-size:12.5px;word-break:break-all;text-align:right}
+  .price{font-weight:800;font-size:15px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .term{white-space:nowrap;color:var(--muted)}
+  .stock{display:inline-block;font-size:11.5px;font-weight:700;border-radius:6px;padding:3px 9px;white-space:nowrap}
+  .stock.many{background:rgba(125,217,123,.13);color:#7dd97b}
+  .stock.few{background:rgba(255,196,60,.12);color:#ffc43c}
+  .cross{font-size:10.5px;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--muted);margin-left:8px;vertical-align:1px}
+
+  /* модальные окна */
+  .overlay{position:fixed;inset:0;background:rgba(5,11,18,.72);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .overlay.open{display:flex}
+  .modal{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:26px;width:100%;max-width:470px;max-height:none;margin:auto}
+  .bulkres{width:100%;border-collapse:collapse;font-size:13px}
+  .bulkres th{position:sticky;top:0;background:#0f2136;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+  .bulkres td{padding:8px 10px;border-bottom:1px solid #1d3450}
+  .modal.wide{max-width:980px}
+  .modal label.ondemand{display:flex;gap:9px;align-items:flex-start;margin-top:14px;color:var(--text);cursor:pointer}
+  .modal label.ondemand input{width:auto;margin-top:3px;accent-color:var(--accent)}
+  .ck .od{font-size:11px;color:var(--muted);margin-left:4px}
+  .modal .sups{margin-top:6px}
+  .modal h3{font-size:19px;margin-bottom:4px}
+  .modal .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+  .modal label{display:block;font-size:12.5px;color:var(--muted);margin:11px 0 5px}
+  .modal input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:11px 14px;color:var(--text);font-size:14px;font-family:inherit}
+  .modal input:focus{outline:none;border-color:var(--accent)}
+  .modal .row{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+  .modal .err{color:#ffb1b1;font-size:12.5px;margin-top:10px;display:none}
+  .tabs{display:flex;gap:8px;margin-bottom:6px}
+  .tabs button{flex:1;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:9px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+  .tabs button.on{border-color:var(--accent);color:var(--accent);background:rgba(255,140,26,.08)}
+  .modebtns{display:flex;gap:8px;margin-bottom:4px}
+  .modebtns button{flex:1;background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:8px;padding:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+  .modebtns button.on{border-color:var(--accent);color:var(--accent);background:rgba(255,140,26,.08)}
+  .usr-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .usr-row .st{font-size:11.5px;color:var(--muted)}
+  .usr-row .st.pend{color:#ffc43c}
+  .usr-row .st.ok{color:#7dd97b}
+  .usr-row .nm{flex:1}
+
+  /* боты в мессенджерах */
+  .bots{border-top:1px solid var(--line);background:var(--bg2);padding:36px 0;margin-top:36px}
+  .bots h2{font-size:22px;margin-bottom:18px}
+  .qrcards{display:flex;gap:20px;flex-wrap:wrap}
+  .qrcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:8px;max-width:220px;text-align:center}
+  .qrcard img{width:170px;height:170px;border-radius:8px;background:#fff}
+  .qrcard b{font-size:14px}
+  .qrcard span{font-size:12px;color:var(--muted)}
+
+  footer{border-top:1px solid var(--line);margin-top:36px;padding:24px 0;color:var(--muted);font-size:12.5px}
+  .foot{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+
+  @media(max-width:1080px){
+    .layout{grid-template-columns:1fr}
+    .sidebar{position:static;max-height:none}
+  }
+  @media(max-width:720px){
+    .hint-row .br{flex-basis:auto}
+    .nav .btn span{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="/">
+      <img class="logo-img" src="/logo.png" alt="RVA161">
+      <span>ПРОЦЕНКА ПОСТАВЩИКОВ<small>РАБОЧАЯ ПРОГРАММА</small></span>
+    </a>
+    <div class="userbox">
+      <a class="btn btn-ghost btn-sm" href="/">На главную</a>
+      <div id="userbox"></div>
+    </div>
+  </div>
+</header>
+<div class="accessbar" id="accessbar" role="status"></div>
+
+<div class="wrap">
+  <div class="hero">
+    <span class="kicker">Проценка по всем поставщикам</span>
+    <p id="heroText">Введите артикул — программа опросит всех подключённых поставщиков и покажет предложения по возрастанию цены. Кнопка «Артикул» — точный поиск; выключите — увидите все аналоги. Для оптовых закупщиков и автопарков — массовая загрузка списка артикулов (XLS/CSV): загрузите список на ТО из 20–50 позиций и получите один общий отчёт с лучшими ценами.</p>
+  </div>
+
+  <div class="layout">
+    <!-- ======== боковая панель фильтров (рис. 3) — после входа ======== -->
+    <aside class="sidebar" id="sidebar" style="display:none">
+      <div class="head">
+        <b>Фильтры</b>
+        <button class="btn btn-ghost btn-sm" onclick="resetFilters()">Сбросить</button>
+      </div>
+
+      <div class="side-sec">
+        <div class="t" onclick="tplMenu()"><span>Сохранить шаблон</span><span class="arr">▾</span></div>
+        <div class="body" id="tplBody">
+          <div class="tplrow" style="color:var(--muted);font-size:12px">Шаблоны хранят текущий набор фильтров</div>
+        </div>
+      </div>
+
+      <div class="side-sec">
+        <div class="t" onclick="sec(this)">Популярные фильтры</div>
+        <div class="body">
+          <div class="chips">
+            <button class="chip on" id="chArt" onclick="toggleArt()" title="Активна — точный поиск по артикулу; выключите — все аналоги, включая артикул"># Артикул</button>
+            <button class="chip" id="chStock" onclick="chip('chStock')" title="Показать позиции со сроком доставки 0 дней — со склада">В наличии</button>
+            <button class="chip" id="chDealer" onclick="chip('chDealer')">Дилеры</button>
+            <button class="chip" id="chRet" onclick="chip('chRet')">Возврат</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-sec">
+        <div class="t" onclick="sec(this)">Срок поставки</div>
+        <div class="body">
+          <select class="minput" id="fTerm" onchange="render()">
+            <option value="">Любой</option>
+            <option value="1">до 1 дня</option>
+            <option value="2">до 2 дней</option>
+            <option value="3">до 3 дней</option>
+            <option value="5">до 5 дней</option>
+            <option value="7">до 7 дней</option>
+            <option value="10">до 10 дней</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="side-sec closed">
+        <div class="t" onclick="sec(this)">Производители</div>
+        <div class="body" id="fBrands"><div style="color:var(--muted);font-size:12px">Выполните поиск</div></div>
+      </div>
+
+      <div class="side-sec closed">
+        <div class="t" onclick="sec(this)">Поставщики</div>
+        <div class="body" id="fSups"><div style="color:var(--muted);font-size:12px">—</div></div>
+      </div>
+
+      <div class="side-sec closed">
+        <div class="t" onclick="sec(this)">Цена</div>
+        <div class="body">
+          <div class="pair">
+            <input class="minput" id="fPriceMin" type="number" placeholder="от, ₽" oninput="render()">
+            <input class="minput" id="fPriceMax" type="number" placeholder="до, ₽" oninput="render()">
+          </div>
+        </div>
+      </div>
+
+      <div class="side-sec closed">
+        <div class="t" onclick="sec(this)">Количество</div>
+        <div class="body">
+          <input class="minput" id="fAmount" type="number" placeholder="от, шт" oninput="render()">
+        </div>
+      </div>
+
+      <div class="side-sec closed">
+        <div class="t" onclick="sec(this)">Склады</div>
+        <div class="body" id="fWhs"><div style="color:var(--muted);font-size:12px">Выполните поиск</div></div>
+      </div>
+    </aside>
+
+    <!-- ======== контент ======== -->
+    <div class="content">
+      <div class="supbar" id="supbar" style="display:none">
+        <button class="btn btn-ghost" id="btnVerified" onclick="openVerified()" title="Поставщики, подключение к которым мы проверили — ссылки на их магазины">✔ Проверенные поставщики</button>
+        <label class="markup adm-only" title="Наценка к вашей закупочной цене — её видят гости (без регистрации) на этой странице и в ботах">Наценка <input id="guestMarkup" type="number" min="0" max="500" step="1" value="20" onchange="saveMarkup()"> % <span class="ok" id="markupOk">✓ сохранено</span></label>
+        <button class="btn btn-ghost" id="supCount" onclick="openModal('sups')">Мои поставщики</button>
+        <button class="btn btn-acc" onclick="openSupForm()">+ Добавить поставщика</button>
+      </div>
+
+      <div class="searchbar" style="margin-top:14px">
+        <input type="text" style="display:none" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <input id="q" type="search" name="q" autocomplete="off" spellcheck="false" placeholder="Введите артикул, бренд или наименование позиции…" value="A00033252" onkeydown="if(event.key==='Enter')doSearch();if(event.key==='Escape')hideRecent()" oninput="hideRecent()" onfocus="showRecent()">
+        <button class="btn btn-acc" onclick="doSearch()">Найти</button>
+        <button class="btn btn-ghost" id="bulkBtn" style="display:none" onclick="bulkOpen()" title="Список артикулов файлом (XLSX/CSV) — один общий отчёт с лучшими ценами">📄 Массово</button>
+      </div>
+      <div class="guestnote" id="guestnote" style="margin-top:10px;display:none">
+        Вы вошли как гость: доступен поиск, первые 10 предложений, цены — розничные. <a onclick="openModal('auth')">Войдите или зарегистрируйтесь</a> — полный доступ к выдаче открывает администратор (дни доступа).
+      </div>
+
+      <div class="hints" id="hints">
+        <div class="h">Возможные запросы</div>
+        <div id="hintRows"></div>
+      </div>
+
+      <div class="controls" id="controls" style="display:none">
+        <div class="seg">
+          <button class="on" id="mExact" onclick="setMode('exact')">По артикулу</button>
+          <button id="mAnalog" onclick="setMode('analog')">С аналогами</button>
+        </div>
+        <span class="guestnote" id="resCount"></span>
+      </div>
+
+      <div class="statline" id="statline"></div>
+
+      <div class="tbl-wrap" id="tblWrap">
+        <table>
+          <thead><tr>
+            <th id="thSup">Поставщик</th><th>Бренд</th><th>Артикул</th><th>Наименование</th>
+            <th>Срок</th><th>Цена</th><th>Наличие</th><th id="thWhs">Склад</th><th class="cartcol" id="thCart" title="Перейти на сайт поставщика для заказа">Заказ</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== вход / регистрация ======== -->
+<div class="overlay" id="ov-auth">
+  <div class="modal">
+    <h3 id="authTitle">Вход</h3>
+    <div class="sub">Гость видит только поиск. Зарегистрируйтесь — полный доступ к проценке открывает администратор.</div>
+    <div class="tabs" id="aTabs">
+      <button class="on" id="tabLogin" onclick="authTab('login')">Вход</button>
+      <button id="tabReg" onclick="authTab('reg')">Регистрация</button>
+    </div>
+    <div id="aForm">
+    <div id="aNameWrap" style="display:none">
+      <label>Фамилия</label>
+      <input id="aSurname" placeholder="Фамилия">
+      <label>Имя</label>
+      <input id="aName" placeholder="Как к вам обращаться">
+      <label>Отчество</label>
+      <input id="aPatronymic" placeholder="Отчество">
+    </div>
+    <label>Email (он же логин)</label>
+    <input id="aLogin" placeholder="you@mail.ru">
+    <div id="aPhoneWrap" style="display:none">
+      <label>Телефон — по нему бот привяжет аккаунт, и мы сможем с вами связаться</label>
+      <input id="aPhone" type="tel" autocomplete="tel" placeholder="+7 900 000-00-00">
+    </div>
+    <label>Пароль</label>
+      <input id="aPass" type="password" placeholder="Ваш пароль">
+      <div id="aPass2Wrap" style="display:none">
+        <label>Повторите пароль</label>
+        <input id="aPass2" type="password" placeholder="Ещё раз пароль" onkeydown="if(event.key==='Enter')authGo()">
+      </div>
+      <label class="consent" id="aConsentWrap" style="display:none">
+        <input type="checkbox" id="aConsent" onchange="document.getElementById('authGoBtn').disabled = authMode === 'reg' && !this.checked">
+        <span>Я даю согласие на обработку персональных данных (ФИО, email, телефон) — для регистрации и работы аккаунта.</span>
+      </label>
+      <div class="err" id="aErr"></div>
+      <button class="btn btn-ghost" id="l3Btn" style="width:100%;margin-top:10px" onclick="l3Request()">Оставить заявку на Проценку</button>
+      <div class="row">
+        <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+        <button class="btn btn-acc" id="authGoBtn" onclick="authGo()">Войти</button>
+      </div>
+    </div>
+    <div id="aSent" style="display:none">
+      <div class="sub" id="aSentHint"></div>
+      <div class="muted" style="margin-top:8px">Если письма нет во входящих — проверьте папку «Спам». Ссылка действует 24 часа.</div>
+      <div class="err" id="aSentErr"></div>
+      <div class="row">
+        <button class="btn btn-ghost" onclick="resendLink()">Письмо ещё раз</button>
+        <button class="btn btn-acc" onclick="closeModal()">Готово</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== добавление поставщика ======== -->
+<div class="overlay" id="ov-verified">
+  <div class="modal wide">
+    <h3>Проверенные поставщики</h3>
+    <div class="sub">Подключение к этим поставщикам проверено — проценка по ним работает. Ссылка ведёт на главную страницу магазина: зарегистрируйтесь там или войдите в свой кабинет, а затем подключите поставщика у себя. Список постоянно пополняется.</div>
+    <div class="verlist" id="verList">Загрузка…</div>
+    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Закрыть</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-sups">
+  <div class="modal wide">
+    <h3>Мои поставщики</h3>
+    <div class="sub" id="supsSub">По ним идёт проценка.</div>
+    <div class="suplist" id="sups"></div>
+    <div class="row">
+      <button class="btn btn-ghost" onclick="closeModal()">Закрыть</button>
+      <button class="btn btn-acc full-only" onclick="openSupForm()">+ Добавить поставщика</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov-addSup">
+  <div class="modal">
+    <h3 id="mTitle">Новый поставщик</h3>
+    <div class="sub">Интернет-магазин с API — четыре поля; либо поставщик по локальному прайс-листу.</div>
+    <div class="modebtns">
+      <button class="on" id="mdApi" onclick="supMode('api')">Интернет-магазин / API</button>
+      <button id="mdPrice" onclick="supMode('pricelist')">Прайс-лист (файл)</button>
+      <button id="mdBrowser" onclick="supMode('browser')">Сайт без API</button>
+    </div>
+      <div id="apiFields">
+      <label>Название</label>
+      <input id="mName" placeholder="Например: Автодеталь" oninput="supHint()">
+      <label>Сайт</label>
+      <input id="mSite" placeholder="Например: поставщик.рф" oninput="supHint()">
+      <label>Логин</label>
+      <input id="mLogin" placeholder="Логин в личном кабинете">
+      <label>Пароль</label>
+      <input id="mPass" type="password" placeholder="Пароль личного кабинета">
+      <label>API KEY 1</label>
+      <input id="mKey1" placeholder="Первый ключ (если API использует пару)">
+      <label>Ссылка для корзины — поиск на сайте поставщика, вместо артикула {code} (необязательно)</label>
+      <input id="mOrderUrl" placeholder="https://site.ru/search?q={code} — пусто: главная страница сайта">
+      <label>Адрес магазина для списка «Проверенные поставщики» (необязательно)</label>
+      <input id="mPublicUrl" placeholder="пусто: главная страница из поля «Сайт»">
+      <label class="ondemand"><input type="checkbox" id="mOnDemand"> Опрашивать только по галочке в фильтре «Поставщики» — для поставщиков с лимитом запросов</label>
+      <div id="supHint" style="display:none;margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:10px 12px">
+        <div style="font-weight:700;margin-bottom:6px">Подключение поставщика — добавьте IP нашей программы в разрешённые</div>
+        <div style="font-size:12.5px;color:var(--muted)">Для подключения сервиса необходимо в личном кабинете поставщика добавить IP-адрес нашей программы в список разрешённых. Логин здесь — код клиента поставщика.</div>
+        
+      </div>
+    </div>
+    <div id="browserFields" style="display:none">
+      <label>Название поставщика</label>
+      <input id="bName" placeholder="Например: АвтоДеталь">
+      <label>Адрес страницы поиска — вместо артикула напишите {code}</label>
+      <input id="bUrl" placeholder="https://site.ru/search?q={code}">
+      <div class="sub" style="margin-top:10px">Найдите на сайте поставщика любой артикул и скопируйте адрес страницы с результатами, заменив артикул на <b>{code}</b>. Программа откроет эту страницу в браузере Chrome, сделает снимок и разберёт цены с помощью ИИ (10–30 секунд на артикул, результат запоминается на 10 минут). Если цены видны только после входа — после сохранения нажмите «Войти на сайт» в списке поставщиков.</div>
+      <label class="ondemand"><input type="checkbox" id="bOnDemand"> Опрашивать только по галочке в фильтре «Поставщики»</label>
+    </div>
+    <div id="priceFields" style="display:none">
+      <label>Название поставщика</label>
+      <input id="pName" placeholder="Например: МаслоПром (прайс)">
+      <label>Имя файла прайса в папке procenka/prices</label>
+      <input id="pPath" placeholder="price.csv">
+      <div class="sub" style="margin-top:10px">Форматы: CSV, TSV, TXT (разделители ; , таб), XLSX. Колонки (артикул, бренд, название, цена, количество, срок, склад) распознаются по заголовку автоматически.</div>
+    </div>
+    <div class="err" id="mErr"></div>
+    <div class="row">
+      <button class="btn btn-ghost" onclick="closeModal('addSup')">Отмена</button>
+      <button class="btn btn-acc" onclick="saveSupplier()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== пользователи (админ) ======== -->
+<div class="overlay" id="ov-users">
+  <div class="modal">
+    <h3>Пользователи</h3>
+    <div class="sub">Новые регистрации ждут вашего подтверждения — без него доступен только поиск.</div>
+    <div id="usrList">Загрузка…</div>
+    <div class="row"><button class="btn btn-ghost" onclick="closeModal()">Закрыть</button></div>
+  </div>
+</div>
+
+<!-- ======== массовая проценка: список артикулов файлом ======== -->
+<div class="overlay" id="ov-bulk">
+  <div class="modal" style="max-width:780px">
+    <h3>Массовая проценка</h3>
+    <div class="sub">Файл XLSX, XLS, CSV, TSV или TXT: одна строка — одна позиция (артикул, бренд — если знаете, комментарий). Колонки распознаются по заголовкам; без заголовков первая колонка — артикул, вторая — бренд. До 200 позиций.</div>
+
+    <div id="bulkStep1">
+      <input type="file" id="bulkFile" accept=".xlsx,.xls,.csv,.tsv,.txt" style="margin:14px 0">
+      <div class="sub" id="bulkErr" style="color:#ffb3b3;display:none"></div>
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="closeModal('bulk')">Отмена</button>
+        <button class="btn btn-acc" id="bulkParseBtn" onclick="bulkParse()">Разобрать файл</button>
+      </div>
+    </div>
+
+    <div id="bulkStep2" style="display:none">
+      <div class="sub" style="margin:12px 0">У этих позиций бренд не указан — выберите вариант, иначе позиция будет пропущена:</div>
+      <div id="bulkNeed" style="max-height:300px;overflow:auto"></div>
+      <div class="sub" id="bulkOkCount" style="margin-top:10px"></div>
+      <div class="row" style="justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="bulkOpen()">← Другой файл</button>
+        <button class="btn btn-acc" onclick="bulkBegin()">Начать проценку</button>
+      </div>
+    </div>
+
+    <div id="bulkStep3" style="display:none">
+      <div style="margin:16px 0"><b id="bulkProgText">Готово 0 из 0</b>
+        <div style="background:#13273d;border-radius:8px;height:14px;margin-top:8px;overflow:hidden"><div id="bulkBar" style="height:100%;width:0;background:var(--accent);transition:width .5s"></div></div>
+      </div>
+      <div class="sub">Ищу предложения у поставщиков — по одной позиции за раз. Вкладку можно закрыть, задание досчитается на сервере.</div>
+    </div>
+
+    <div id="bulkStep4" style="display:none">
+      <div id="bulkSum" style="margin:12px 0;font-size:15.5px"></div>
+      <div style="max-height:340px;overflow:auto;margin:8px 0">
+        <table class="bulkres" id="bulkResTbl"></table>
+      </div>
+      <div class="row" style="justify-content:flex-end;flex-wrap:wrap">
+        <button class="btn btn-ghost" onclick="bulkOpen()">Новая загрузка</button>
+        <a class="btn btn-ghost" id="bulkCsv" download>Скачать CSV</a>
+        <a class="btn btn-acc" id="bulkXlsx" download>Скачать XLSX</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="bots">
+  <div class="wrap">
+    <h2>Наши боты в мессенджерах</h2>
+    <div class="qrcards">
+      <div class="qrcard">
+        <img src="/qr_max.png" alt="QR: бот Prodobrey в MAX" onerror="this.parentElement.style.display='none'">
+        <b>Бот Prodobrey в MAX</b>
+        <span>Новости, проценка, вопросы — всегда в телефоне</span>
+      </div>
+      <div class="qrcard">
+        <img src="/qr_tg.png" alt="QR: бот в Telegram" onerror="this.parentElement.style.display='none'">
+        <b>Бот в Telegram</b>
+        <span>Тот же сервис в другом мессенджере</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <span>Проценка поставщиков · пользователи — в базе data.db, поставщики — в suppliers.json</span>
+    <span>Сервер: node server.js · порт 8766</span>
+  </div>
+</footer>
+
+<script>
+let suppliers = [], me = null, curCode = '', curBrand = '', curPid = '', curName = '', allRows = [];
+let tplOpen = false, authMode = 'login', supModeCur = 'api';
+
+// ---------- авторизация ----------
+async function loadMe(){
+  const r = await fetch('/api/auth/me');
+  const d = await r.json();
+  me = d.user;
+  renderUserbox();
+  applyAccess();
+  loadMarkup();
+  loadRecent();
+}
+function renderUserbox(){
+  const box = document.getElementById('userbox');
+  if (!me) {
+    box.innerHTML = '<button class="btn btn-ghost" onclick="openModal(\'auth\')">Войти</button>';
+  } else {
+    const pend = me.approved ? '' : ' <span class="rolechip">ждёт подтверждения</span>';
+    const admin = me.role === 'admin' ? ' <span class="rolechip admin">админ</span>' : '';
+    const usrBtn = me.role === 'admin'
+      ? ' <a class="btn btn-ghost btn-sm" href="/кабинет">Кабинет</a> <button class="btn btn-ghost btn-sm" onclick="openUsers()">Пользователи</button>'
+      : (me.approved ? ' <a class="btn btn-ghost btn-sm" href="/кабинет">Кабинет</a>' : '');
+    box.innerHTML = `<span class="who"><b>${esc(me.login)}</b>${admin}${pend}</span>${usrBtn}<button class="btn btn-ghost btn-sm" onclick="doLogout()">Выйти</button>`;
+  }
+}
+function applyAccess(){
+  const full = !!(me && me.full);   // одобрен и срок доступа не кончился (считает сервер)
+  const isAdmin = !!(me && me.role === 'admin');
+  const space = me ? (me.supSpace || (isAdmin ? 'global' : 'none')) : 'none';
+  const canManage = space === 'own' || isAdmin;   // свой личный список — или общий у директора
+  renderAccessBar();
+  document.getElementById('sidebar').style.display = full ? '' : 'none';
+  document.querySelector('.layout').classList.toggle('solo', !full);
+  document.getElementById('supbar').style.display = 'flex';
+  document.getElementById('btnVerified').style.display = me ? '' : 'none';   // гостю не нужна
+  document.getElementById('supCount').style.display = full && space !== 'view' ? '' : 'none';
+  document.getElementById('bulkBtn').style.display = full ? '' : 'none';   // массовая проценка — свои поставщики
+  document.querySelectorAll('#supbar .btn-acc, .full-only').forEach(b => b.style.display = canManage ? '' : 'none');   // «+ Добавить поставщика»
+  document.querySelectorAll('.adm-only').forEach(b => b.style.display = isAdmin ? '' : 'none');
+  document.getElementById('mdPrice').style.display = isAdmin ? '' : 'none';   // прайс-лист и «через браузер»
+  document.getElementById('mdBrowser').style.display = isAdmin ? '' : 'none'; // подключает только директор
+  // подсказка гостю; у одобренного с закончившимся сроком всё объясняет полоса «доступ закончился»
+  document.getElementById('guestnote').style.display = full || (me && me.approved) ? 'none' : 'block';
+  document.getElementById('thSup').style.display = full ? '' : 'none';
+  document.getElementById('thWhs').style.display = full ? '' : 'none';   // гостю склады не показываем
+  document.getElementById('thCart').style.display = full ? '' : 'none';
+}
+function authTab(m){
+  authMode = m;
+  document.getElementById('tabLogin').classList.toggle('on', m === 'login');
+  document.getElementById('tabReg').classList.toggle('on', m === 'reg');
+  document.getElementById('authTitle').textContent = m === 'login' ? 'Вход' : 'Регистрация';
+  document.getElementById('authGoBtn').textContent = m === 'login' ? 'Войти' : 'Зарегистрироваться';
+  const reg = m === 'reg';
+  document.getElementById('aNameWrap').style.display = reg ? '' : 'none';
+  document.getElementById('aPhoneWrap').style.display = reg ? '' : 'none';
+  document.getElementById('aPass2Wrap').style.display = reg ? '' : 'none';
+  document.getElementById('aConsentWrap').style.display = reg ? 'flex' : 'none';
+  document.getElementById('l3Btn').style.display = reg ? 'none' : '';
+  document.getElementById('authGoBtn').disabled = reg && !document.getElementById('aConsent').checked;
+}
+async function l3Request(){   // 2 уровень → заявка на страницу Проценки (3 уровень)
+  const login = document.getElementById('aLogin').value.trim();
+  const password = document.getElementById('aPass').value;
+  const err = document.getElementById('aErr');
+  err.style.display = 'none'; err.style.color = '#ffb1b1';
+  if (!login || !password) { err.textContent = 'Введите логин и пароль, затем нажмите «Оставить заявку»'; err.style.display = 'block'; return; }
+  try {
+    const r = await fetch('/api/auth/l3-request', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login, password }) });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Ошибка ' + r.status);
+    err.style.color = '#9fe6a0'; err.textContent = d.message; err.style.display = 'block';
+  } catch (e) { err.textContent = e.message; err.style.display = 'block'; }
+}
+async function authGo(){
+  if (authMode === 'reg' && !document.getElementById('aConsent').checked) return;  // без согласия регистрация не отправляется
+  const login = document.getElementById('aLogin').value.trim();
+  const password = document.getElementById('aPass').value;
+  const name = document.getElementById('aName').value.trim();
+  const surname = document.getElementById('aSurname').value.trim();
+  const patronymic = document.getElementById('aPatronymic').value.trim();
+  const phone = document.getElementById('aPhone').value.trim();
+  const pass2 = document.getElementById('aPass2').value;
+  const err = document.getElementById('aErr');
+  err.style.display = 'none'; err.style.color = '#ffb1b1';
+  if (authMode === 'login' && (!login || !password)) { err.textContent = 'Введите email и пароль'; err.style.display = 'block'; return; }
+  if (authMode === 'reg') {
+    if (!name) { err.textContent = 'Укажите имя'; err.style.display = 'block'; return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(login)) { err.textContent = 'Укажите email — он же логин'; err.style.display = 'block'; return; }
+    if (!phone) { err.textContent = 'Укажите телефон — по нему бот будет отвечать на вопросы'; err.style.display = 'block'; return; }
+    if (password !== pass2) { err.textContent = 'Пароли не совпадают'; err.style.display = 'block'; return; }
+  }
+  const r = await fetch('/api/auth/' + (authMode === 'login' ? 'login' : 'register'), {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(authMode === 'login' ? { login, password } : { login, password, name, surname, patronymic, phone })
+  });
+  const d = await r.json();
+  if (!r.ok || d.error) {
+    err.textContent = d.pending ? d.error : (d.error || 'Ошибка');
+    err.style.display = 'block';
+    if (d.pending) setTimeout(closeModal, 5000);   // 5 секунд — успеть прочитать, что письмо может лежать в «Спаме»
+    return;
+  }
+  if (authMode === 'register') {
+    // шаг 2: переход по ссылке из письма
+    showSentStep(login, d.dev_link);
+    return;
+  }
+  await loadMe();
+  closeModal();
+  loadSups();
+}
+
+// ---------- подтверждение email ссылкой ----------
+let pendingLogin = '';
+function esc(s){const d=document.createElement('div');d.textContent=s==null?'':String(s);return d.innerHTML}
+function showSentStep(login, devLink){
+  pendingLogin = login;
+  document.getElementById('aTabs').style.display = 'none';
+  document.getElementById('aForm').style.display = 'none';
+  document.getElementById('aSent').style.display = '';
+  const hint = document.getElementById('aSentHint');
+  hint.innerHTML = '✉️ Письмо со ссылкой для подтверждения отправлено на <b>' + esc(login) + '</b>.' +
+    ' Перейдите по ссылке из письма — это подтвердит ваш email. Ссылка действует 24 часа.';
+  if (devLink) {
+    hint.innerHTML += '<br><span style="color:#ffd479">Тестовый режим: <a href="' + devLink + '">подтвердить сейчас</a></span>';
+  }
+}
+function resetAuthView(){
+  document.getElementById('aTabs').style.display = '';
+  document.getElementById('aForm').style.display = '';
+  document.getElementById('aSent').style.display = 'none';
+  document.getElementById('aSentErr').style.display = 'none';
+  pendingLogin = '';
+}
+function sentErr(msg, ok){
+  const err = document.getElementById('aSentErr');
+  err.style.color = ok ? '#7dd97b' : '#ffb1b1';
+  err.textContent = msg; err.style.display = 'block';
+}
+async function resendLink(){
+  const r = await fetch('/api/auth/resend', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ login: pendingLogin })
+  });
+  const d = await r.json();
+  if (!r.ok || d.error) { sentErr(d.error || 'Ошибка'); return; }
+  sentErr(d.message + (d.dev_link ? ' · тестовая ссылка выше обновлена' : ''), true);
+  if (d.dev_link) showSentStep(pendingLogin, d.dev_link);
+}
+async function doLogout(){
+  await fetch('/api/auth/logout', { method: 'POST' });
+  me = null; renderUserbox(); applyAccess(); loadSups();
+}
+async function openUsers(){
+  openModal('users');
+  const r = await fetch('/api/admin/users');
+  const d = await r.json();
+  const box = document.getElementById('usrList');
+  if (d.error) { box.textContent = d.error; return; }
+  box.innerHTML = '';
+  d.users.forEach(u => {
+    const row = document.createElement('div');
+    row.className = 'usr-row';
+    const st = u.approved ? '<span class="st ok">подтверждён</span>' : '<span class="st pend">ждёт подтверждения</span>';
+    const acts = u.approved ? '' :
+      `<button class="btn btn-acc btn-sm" onclick="usrAct('${esc(u.id)}','approve')">Подтвердить</button>
+       <button class="btn btn-ghost btn-sm" onclick="usrAct('${esc(u.id)}','reject')">Отказать</button>`;
+    const fio = esc([u.surname, u.name, u.patronymic].filter(Boolean).join(' '));
+    const meta = [fio, u.phone ? '📱 ' + esc(u.phone) : '', 'ур. ' + esc(u.level)].filter(Boolean).join(' · ');
+    row.innerHTML = `<span class="nm"><b>${esc(u.login)}</b>${fio ? ' · ' + fio : ''} ${u.role === 'admin' ? '· админ' : ''}${meta ? '<br><small>' + meta + '</small>' : ''}</span>${st}${acts}`;
+    box.appendChild(row);
+  });
+}
+async function usrAct(id, action){
+  const r = await fetch('/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action }) });
+  const d = await r.json();
+  if (d.error) { alert(d.error); return; }
+  openUsers();
+}
+
+// ---------- поставщики ----------
+async function loadSups(){
+  const r = await fetch('/api/suppliers');
+  suppliers = await r.json();
+  renderSups();
+  renderSupFilter();
+}
+// «Мои поставщики»: список по алфавиту. Галочка слева (только админ) — поставщик участвует
+// в оценке незарегистрированных (гостей и ботов); на личную проценку директора это не влияет —
+// её набор отмечается галочками в фильтре «Поставщики» на странице поиска.
+function supStatus(s){
+  if (s.enabled === false) return ['nokey', 'не для гостей: незарегистрированным не опрашивается'];
+  if (s.onDemand) return ['ok', 'по запросу: включается галочкой в фильтре «Поставщики»'];
+  if (s.adapter === 'demo') return ['ok', 'офлайн-демо'];
+  if (s.adapter === 'sup01web') return ['ok', 'работает без ключа (цены сайта)'];
+  if (s.adapter === 'pricelist') return ['ok', 'прайс: ' + s.pricePath];
+  if (s.adapter === 'browser') return ['ok', 'сайт без API: браузер + ИИ'];
+  if (s.adapter === 'sup02') return s.keyPair ? ['ok', 'ключи KEY1:KEY2 заданы'] : ['nokey', 'нужна пара ключей KEY1:KEY2'];
+  if (s.adapter === 'none') return ['nokey', 'подключение к этому поставщику ещё не сделано'];
+  if (s.hasKey && ['sup03', 'sup01', 'sup05', 'sup07', 'sup08', 'sup09'].includes(s.adapter)) return ['ok', 'API по ключу (договорные цены)'];
+  if (s.adapter === 'sup06') return ['ok', 'API (логин и пароль, договорные цены)'];
+  if (s.adapter === 'sup15') return ['ok', 'API SOAP-поставщика (логин и пароль кабинета; цены, остатки, аналоги)'];
+  if (s.adapter === 'sup10') return ['ok', 'API поставщика: наличие по коду и бренду (логин и пароль)'];
+  if (s.adapter === 'sup11') return ['ok', 'API платформы (логин и пароль, договорные цены)'];
+  if (s.adapter === 'sup12') return ['ok', 'API платформы SearchService (логин и пароль, договорные цены)'];
+  return s.hasKey ? ['ok', 'ключ задан'] : ['nokey', 'нет ключа'];
+}
+function renderSups(){
+  const box = document.getElementById('sups');
+  box.innerHTML = '';
+  const isAdmin = !!(me && me.role === 'admin');
+  const canManage = !!(me && (isAdmin || me.supSpace === 'own'));
+  const on = suppliers.filter(s => s.enabled !== false).length;
+  document.getElementById('supCount').textContent = canManage && on !== suppliers.length
+    ? `Мои поставщики (${on} из ${suppliers.length})` : `Мои поставщики (${suppliers.length})`;
+  document.getElementById('supsSub').textContent = !canManage
+    ? 'Общий список директора — по нему идёт ваша проценка. Изменять его может только директор.'
+    : isAdmin
+    ? 'Галочка слева — поставщик опрашивается в оценке незарегистрированных (гостей и ботов). Ваша собственная проценка от этой галочки не зависит: её набор отмечается в фильтре «Поставщики» на странице поиска.'
+    : 'Ваш личный список: добавьте поставщиков со своими логинами и паролями — проценка пойдёт только по ним и покажет ваши цены. Список и данные видны только вам. Набор для поиска отмечается в фильтре «Поставщики» на странице поиска.';
+  [...suppliers].sort((a, b) => a.name.localeCompare(b.name, 'ru')).forEach(s => {
+    const [cls, st] = supStatus(s);
+    const d = document.createElement('div');
+    d.className = 'suprow' + (s.enabled === false ? ' off' : '');
+    const ck = isAdmin ? `<input type="checkbox" ${s.enabled !== false ? 'checked' : ''} title="Опрашивается у незарегистрированных (гостей и ботов)" onchange="toggleSup('${esc(s.id)}', this.checked)">` : '<span></span>';
+    const login = isAdmin && s.adapter === 'browser' ? `<button class="btn btn-ghost btn-sm" onclick="browserLogin('${esc(s.id)}')" title="Открыть сайт в окне Chrome программы, чтобы войти в кабинет">Войти на сайт</button>` : '';
+    const acts = canManage ? `${login}<button class="btn btn-ghost btn-sm" onclick="editSupplier('${esc(s.id)}')">✏ Изменить</button><button class="del" title="Удалить" onclick="delSup('${esc(s.id)}')">✕</button>` : '';
+    const key = s.hasKey && s.adapter !== 'pricelist' ? ' · ключ ' + esc(s.apiKey) : '';
+    d.innerHTML = `${ck}<div class="nm"><b>${esc(s.name)}</b><div class="meta"><span class="dot ${cls}"></span>${esc(st)} · ${esc(s.site)}${key}</div></div><div class="acts">${acts}</div>`;
+    box.appendChild(d);
+  });
+  if (!suppliers.length) box.innerHTML = canManage
+    ? (isAdmin ? '<div style="color:var(--muted);font-size:13px;padding:12px 14px">Поставщиков пока нет</div>'
+               : '<div style="color:var(--muted);font-size:13px;padding:12px 14px">Список пуст. Нажмите «+ Добавить поставщика»: свои логины и пароли — свои цены. Данные видны только вам.</div>')
+    : '<div style="color:var(--muted);font-size:13px;padding:12px 14px">Поставщиков пока нет</div>';
+}
+async function toggleSup(id, on){
+  const r = await fetch('/api/suppliers?id=' + encodeURIComponent(id), { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: on }) });
+  const d = await r.json();
+  if (d.error) { alert(d.error); return; }
+  suppliers = d.suppliers; renderSups(); renderSupFilter();
+}
+async function browserLogin(id){
+  const r = await fetch('/api/suppliers/browser-login?id=' + encodeURIComponent(id), { method: 'POST' });
+  const d = await r.json();
+  alert(d.error || d.message);
+}
+// ---------- наценка для гостей (только админ) ----------
+async function loadMarkup(){
+  if (!(me && me.role === 'admin')) return;
+  const d = await (await fetch('/api/admin/settings')).json();
+  if (d.guestMarkupPct !== undefined) document.getElementById('guestMarkup').value = d.guestMarkupPct;
+}
+async function saveMarkup(){
+  const inp = document.getElementById('guestMarkup');
+  const r = await fetch('/api/admin/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ guestMarkupPct: Number(inp.value) }) });
+  const d = await r.json();
+  if (d.error) { alert(d.error); return loadMarkup(); }
+  inp.value = d.guestMarkupPct;
+  const ok = document.getElementById('markupOk');
+  ok.classList.add('show'); setTimeout(() => ok.classList.remove('show'), 1500);
+}
+async function delSup(id){
+  if (!confirm('Удалить этого поставщика?')) return;
+  const r = await fetch('/api/suppliers?id=' + encodeURIComponent(id), { method: 'DELETE' });
+  const d = await r.json();
+  if (d.error) { alert(d.error); return; }
+  suppliers = d.suppliers; renderSups(); renderSupFilter();
+}
+function supMode(m){
+  supModeCur = m;
+  document.getElementById('mdApi').classList.toggle('on', m === 'api');
+  document.getElementById('mdPrice').classList.toggle('on', m === 'pricelist');
+  document.getElementById('mdBrowser').classList.toggle('on', m === 'browser');
+  document.getElementById('apiFields').style.display = m === 'api' ? '' : 'none';
+  document.getElementById('priceFields').style.display = m === 'pricelist' ? '' : 'none';
+  document.getElementById('browserFields').style.display = m === 'browser' ? '' : 'none';
+  supHint();
+}
+function supHint(){   // некоторые поставщики требуют добавить IP сервера в личном кабинете — показываем инструкцию
+  const v = ((typeof mName !== 'undefined' && mName.value) + ' ' + mSite.value).toLowerCase();
+  document.getElementById('supHint').style.display = v.includes('sup10') ? '' : 'none';
+}
+let supEditId = null;
+function editSupplier(id){ openSupForm(suppliers.find(x => x.id === id) || null); }
+function openSupForm(s){  // s = поставщик для редактирования или null (новый)
+  supEditId = s ? s.id : null;
+  document.getElementById('mTitle').textContent = s ? 'Изменить поставщика' : 'Новый поставщик';
+  mName.value = s ? s.name : ''; mSite.value = s ? s.site : ''; mLogin.value = s ? (s.login || '') : ''; mPass.value = '';
+  const keys = (s && s.apiKey || '').split(':');
+  mKey1.value = keys[0] || '';
+  document.getElementById('mOnDemand').checked = !!(s && s.onDemand);
+  document.getElementById('mOrderUrl').value = s ? (s.ownOrderUrl || '') : '';
+  document.getElementById('mPublicUrl').value = s ? (s.publicUrl || '') : '';
+  mErr.style.display = 'none';
+  openModal('addSup');
+  // поставщик «через браузер» открывается в своём режиме формы
+  document.getElementById('bName').value = s ? s.name : '';
+  document.getElementById('bUrl').value = s && s.searchUrl ? s.searchUrl : '';
+  document.getElementById('bOnDemand').checked = !!(s && s.onDemand);
+  if (s && s.adapter === 'browser') supMode('browser');
+}
+async function saveSupplier(){
+  const err = document.getElementById('mErr');
+  err.style.display = 'none'; err.style.color = '#ffb1b1';
+  const body = supModeCur === 'pricelist'
+    ? { mode: 'pricelist', name: document.getElementById('pName').value.trim(), path: document.getElementById('pPath').value.trim() }
+    : supModeCur === 'browser'
+    ? { mode: 'browser', name: document.getElementById('bName').value.trim(), searchUrl: document.getElementById('bUrl').value.trim(),
+        onDemand: document.getElementById('bOnDemand').checked }
+    : { name: mName.value.trim(), site: mSite.value.trim(),
+        login: mLogin.value.trim(), password: mPass.value,
+        apiKey1: mKey1.value.trim(), onDemand: document.getElementById('mOnDemand').checked,
+        orderUrl: document.getElementById('mOrderUrl').value.trim(), publicUrl: document.getElementById('mPublicUrl').value.trim() };
+  const url = supEditId ? '/api/suppliers?id=' + encodeURIComponent(supEditId) : '/api/suppliers';
+  const r = await fetch(url, { method: supEditId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (d.error) { err.textContent = d.error; err.style.display = 'block'; return; }
+  suppliers = d.suppliers; renderSups(); renderSupFilter(); closeModal('addSup');
+}
+
+// ---------- поиск ----------
+// ---------- «последние артикулы» (уровень 2+): до 10 кодов, выпадает при клике в поле ----------
+let recentCache = null;
+async function loadRecent(){
+  try {
+    if (!me || !me.approved) { recentCache = null; return; }
+    const r = await fetch('/api/search/recent');
+    const d = await r.json();
+    recentCache = Array.isArray(d.recent) ? d.recent : [];
+  } catch (e) { recentCache = null; }
+}
+function showRecent(){
+  if (!recentCache || !recentCache.length) return;
+  const q = document.getElementById('q');
+  let box = document.getElementById('recentBox');
+  if (!box) { box = document.createElement('div'); box.id = 'recentBox'; box.className = 'recent'; q.parentNode.appendChild(box); }
+  box.innerHTML = recentCache.map(code => `<div class="recent-item" data-code="${esc(code)}">🕘 <b>${esc(code)}</b><span class="m">последние запросы</span></div>`).join('');
+  box.onmousedown = e => {
+    const it = e.target.closest('.recent-item');
+    if (!it) return;
+    q.value = it.dataset.code;
+    hideRecent();
+    doSearch();
+  };
+}
+function hideRecent(){ const b = document.getElementById('recentBox'); if (b) b.remove(); }
+document.addEventListener('click', e => { const b = document.getElementById('recentBox'); if (b && e.target.id !== 'q' && !e.target.closest('#recentBox')) hideRecent(); });
+async function doSearch(){
+  hideRecent();   // список последних артикулов закрывается при любом запуске поиска
+  const code = document.getElementById('q').value.trim();
+  if (!code) return;
+  const r = await fetch('/api/brands?code=' + encodeURIComponent(code) + extraParam());
+  const d = await r.json();
+  if (d.error) { alert(d.error); return; }
+  const box = document.getElementById('hintRows');
+  box.innerHTML = '';
+  d.brands.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'hint-row';
+    const full = !!(me && me.full);
+    btn.innerHTML = `<span class="art">${esc(b.code)}</span><span class="br">${esc(b.brand)}</span>
+      <span class="nm">${esc(b.name)}${b.name && full ? ' · ' : ''}${full && b.suppliers.length ? 'предложения: ' + esc(b.suppliers.join(', ')) : ''}</span>`;
+    btn.onclick = () => runSearch(b.code, b.brand, b.pid, b.name);
+    box.appendChild(btn);
+  });
+  renderStat(d.status);
+  document.getElementById('hints').classList.toggle('open', d.brands.length > 0);
+  if (!d.brands.length) alert('По артикулу ' + code + ' бренды не найдены (см. статусы поставщиков)');
+  loadRecent();   // свежий список «последних артикулов» (сохранился на сервере)
+}
+async function runSearch(code, brand, pid, name){
+  curCode = code; curBrand = brand; curPid = pid || ''; curName = name || '';
+  document.getElementById('hints').classList.remove('open');
+  const crosses = document.getElementById('chArt').classList.contains('on') ? 0 : 1;
+  const r = await fetch(`/api/search?code=${encodeURIComponent(code)}&brand=${encodeURIComponent(brand)}&crosses=${crosses}&pid=${encodeURIComponent(curPid)}&name=${encodeURIComponent(curName)}` + extraParam());
+  const d = await r.json();
+  if (d.error) { alert(d.error); return; }
+  allRows = d.rows;
+  renderStat(d.status);
+  document.getElementById('controls').style.display = 'flex';
+  buildSideLists();
+  render();
+}
+function setMode(m){
+  document.getElementById('mExact').classList.toggle('on', m === 'exact');
+  document.getElementById('mAnalog').classList.toggle('on', m === 'analog');
+  document.getElementById('chArt').classList.toggle('on', m === 'exact');
+  runSearch(curCode, curBrand, curPid, curName);
+}
+function toggleArt(){ chip('chArt'); }
+function chip(id){
+  document.getElementById(id).classList.toggle('on');
+  if (id === 'chArt' && curCode) setMode(document.getElementById('chArt').classList.contains('on') ? 'exact' : 'analog');
+  else render();
+}
+
+// ---------- фильтры (рис. 3) ----------
+function sec(t){ t.parentElement.classList.toggle('closed'); }
+function checkedSet(boxId){
+  return new Set([...document.querySelectorAll('#' + boxId + ' input:checked')].map(i => i.value));
+}
+// Фильтры скрывают только то, что пользователь явно снял: новые значения (после повторного
+// поиска, другого поставщика) и склады, не попавшие в список из 25, показываются.
+function uncheckedSet(boxId){
+  return new Set([...document.querySelectorAll('#' + boxId + ' input[type="checkbox"]:not(:checked)')]
+    .filter(i => i.id !== 'supAllCk').map(i => i.value));
+}
+function buildSideLists(){
+  const brands = [...new Set(allRows.map(r => r.brand))].sort();
+  fillCkList('fBrands', brands, v => allRows.filter(r => r.brand === v).length);
+  const whs = [...new Set(allRows.map(r => r.warehouse).filter(Boolean))].slice(0, 25);
+  fillCkList('fWhs', whs, v => allRows.filter(r => r.warehouse === v).length);
+  renderSupFilter();
+}
+function fillCkList(boxId, values, countFn){
+  const box = document.getElementById(boxId);
+  const off = uncheckedSet(boxId);
+  box.innerHTML = '';
+  if (!values.length) { box.innerHTML = '<div style="color:var(--muted);font-size:12px">Нет данных</div>'; return; }
+  values.forEach(v => {
+    const l = document.createElement('label');
+    l.className = 'ck';
+    const on = !off.has(v);
+    l.innerHTML = `<input type="checkbox" value="${esc(v).replace(/"/g,'&quot;')}" ${on ? 'checked' : ''} onchange="render()"><span>${esc(v)}</span><span class="n">${countFn(v)}</span>`;
+    box.appendChild(l);
+  });
+}
+function renderSupFilter(){
+  const box = document.getElementById('fSups');
+  // Набор личной проценки: галочки здесь независимы от «Мои поставщики» (там — участие у
+  // незарегистрированных). Поставщик один и попадает в оба списка; здесь по умолчанию включены
+  // все, кроме «по запросу» (лимит запросов) и снятых с участия у гостей.
+  const known = new Map([...box.querySelectorAll('input[type="checkbox"]:not(#supAll)')].map(i => [i.value, i.checked]));
+  const isOn = s => known.has(s.name) ? known.get(s.name) : (s.onDemand ? false : s.enabled !== false);
+  const plain = suppliers.filter(s => !s.onDemand);                 // «Выбрать всех» — без «по запросу»
+  const allOn = plain.length > 0 && plain.every(isOn);
+  const isAdm = !!(me && me.role === 'admin');
+  const canManage = !!(me && (isAdm || me.supSpace === 'own'));
+  let h = `<label class="ck" style="font-weight:700"><input type="checkbox" id="supAll" ${allOn ? 'checked' : ''} onchange="supAllTo(this.checked)"><span><b>Выбрать всех</b> (${plain.length})</span></label>`;
+  [...suppliers].sort((a, b) => a.name.localeCompare(b.name, 'ru')).forEach(s => {
+    // любая галочка меняет набор опроса — повторяем текущий поиск; «по запросу» по умолчанию выключен
+    const del = canManage ? `<span class="delx" title="Удалить поставщика" onclick="delSup('${esc(s.id)}')">✕</span>` : '';
+    const od = s.onDemand ? '<span class="od" title="У поставщика лимит запросов — опрашивается только с этой галочкой">по запросу</span>' : '';
+    const ng = s.enabled === false ? '<span class="od" title="В «Мои поставщики» галочка снята — незарегистрированным (гостям) он не опрашивается; на ваш поиск не влияет">не для гостей</span>' : '';
+    h += `<label class="ck"><input type="checkbox" value="${esc(s.name).replace(/"/g,'&quot;')}" ${s.onDemand ? 'data-ondemand="1"' : ''} ${isOn(s) ? 'checked' : ''} onchange="onDemandToggled()"><span>${esc(s.name)}${od}${ng}</span>${del}</label>`;
+  });
+  box.innerHTML = h;
+}
+function supAllTo(on){
+  document.querySelectorAll('#fSups .ck input:not(#supAll):not([data-ondemand])').forEach(i => i.checked = on);
+  onDemandToggled();
+}
+// id отмеченных в фильтре поставщиков → параметр extra: сервер опрашивает ровно их
+function extraParam(){
+  const on = new Set([...document.querySelectorAll('#fSups .ck input:not(#supAll)')].filter(i => i.checked).map(i => i.value));
+  const ids = suppliers.filter(s => on.has(s.name)).map(s => s.id);
+  return '&extra=' + encodeURIComponent(ids.join(','));
+}
+// включили/выключили поставщика «по запросу» — повторяем текущий поиск уже с ним (или без него)
+function onDemandToggled(){
+  if (curCode && curBrand) runSearch(curCode, curBrand, curPid, curName);
+  else render();
+}
+function delSupById(id){
+  if (!confirm('Удалить поставщика?')) return;
+  delSup(id);
+}
+function render(){
+  const termMax = document.getElementById('fTerm').value ? +document.getElementById('fTerm').value : null;
+  const pMin = parseFloat(document.getElementById('fPriceMin').value) || null;
+  const pMax = parseFloat(document.getElementById('fPriceMax').value) || null;
+  const aMin = parseInt(document.getElementById('fAmount').value) || null;
+  const stock = document.getElementById('chStock').classList.contains('on');
+  const dealer = document.getElementById('chDealer').classList.contains('on');
+  const ret = document.getElementById('chRet').classList.contains('on');
+  const brandsOff = uncheckedSet('fBrands'), whsOff = uncheckedSet('fWhs'), supsOff = uncheckedSet('fSups');
+  let rows = allRows.filter(r =>
+    (!stock || String(r.term ?? '').trim() === '0') &&
+    (!dealer || r.dealer) &&
+    (!ret || r.ret) &&
+    (termMax === null || r.term === null || r.term <= termMax) &&
+    (pMin === null || r.price >= pMin) &&
+    (pMax === null || r.price <= pMax) &&
+    (aMin === null || r.amount >= aMin) &&
+    !brandsOff.has(r.brand) &&
+    !supsOff.has(r.supplier) &&
+    !(r.warehouse && whsOff.has(r.warehouse))
+  );
+  rows.sort((a, b) => a.price - b.price);
+  const tb = document.getElementById('tbody');
+  tb.innerHTML = '';
+  const full = !!(me && me.full);
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `${full ? `<td>${esc(r.supplier)}</td>` : ''}
+      <td><span class="br">${esc(r.brand)}</span></td>
+      <td><span class="art">${esc(r.code)}</span>${r.isCross ? '<span class="cross">кросс</span>' : ''}</td>
+      <td>${esc(r.name)}</td>
+      <td class="term">${r.term != null ? esc(r.term) + ' дн' : '—'}</td>
+      <td class="price">${r.price.toLocaleString('ru-RU')} ₽</td>
+      <td><span class="stock ${r.amount >= 10 ? 'many' : 'few'}">${r.amount > 0 ? esc(r.amount) + ' шт' : 'под заказ'}</span></td>
+      ${full ? `<td><span style="color:var(--muted);font-size:12px">${esc(r.warehouse)}${r.dealer ? ' · дилер' : ''}${r.ret ? ' · возврат' : ''}</span></td>` : ''}
+      ${full ? `<td class="cartcol">${cartLink(r)}</td>` : ''}`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('tblWrap').classList.toggle('show', rows.length > 0);
+  document.getElementById('resCount').textContent = allRows.length ? `Показано ${rows.length} из ${allRows.length} предложений` : '';
+}
+function resetFilters(){
+  ['chStock','chDealer','chRet'].forEach(id => document.getElementById(id).classList.remove('on'));
+  document.getElementById('fTerm').value = '';
+  document.getElementById('fPriceMin').value = '';
+  document.getElementById('fPriceMax').value = '';
+  document.getElementById('fAmount').value = '';
+  buildSideLists();
+  renderSupFilter();
+  render();
+}
+
+// ---------- шаблоны фильтров ----------
+function tplState(){
+  return {
+    chips: ['chStock','chDealer','chRet'].map(id => document.getElementById(id).classList.contains('on')),
+    term: document.getElementById('fTerm').value,
+    pMin: document.getElementById('fPriceMin').value,
+    pMax: document.getElementById('fPriceMax').value,
+    amount: document.getElementById('fAmount').value,
+    brands: [...checkedSet('fBrands')], sups: [...checkedSet('fSups')], whs: [...checkedSet('fWhs')]
+  };
+}
+function tplApply(s){
+  ['chStock','chDealer','chRet'].forEach((id, i) => document.getElementById(id).classList.toggle('on', !!(s.chips && s.chips[i])));
+  document.getElementById('fTerm').value = s.term || '';
+  document.getElementById('fPriceMin').value = s.pMin || '';
+  document.getElementById('fPriceMax').value = s.pMax || '';
+  document.getElementById('fAmount').value = s.amount || '';
+  buildSideLists();
+  requestAnimationFrame(() => {
+    [['fBrands', s.brands], ['fWhs', s.whs]].forEach(([id, vals]) => {
+      if (vals && vals.length) document.querySelectorAll('#' + id + ' input').forEach(i => i.checked = vals.includes(i.value));
+    });
+    render();
+  });
+}
+function tplLoad(){ try { return JSON.parse(localStorage.getItem('procenka_tpl_v1') || '[]'); } catch (e) { return []; } }
+function tplSave(list){ localStorage.setItem('procenka_tpl_v1', JSON.stringify(list)); }
+function tplMenu(){
+  const body = document.getElementById('tplBody');
+  tplOpen = !tplOpen;
+  if (!tplOpen) { body.innerHTML = '<div class="tplrow" style="color:var(--muted);font-size:12px">Шаблоны хранят текущий набор фильтров</div>'; return; }
+  renderTplList();
+}
+function renderTplList(){
+  const body = document.getElementById('tplBody');
+  const list = tplLoad();
+  body.innerHTML = '';
+  const add = document.createElement('div');
+  add.innerHTML = `<div class="pair"><input class="minput" id="tplName" placeholder="Название шаблона" style="margin-top:0"><button class="btn btn-acc btn-sm" onclick="tplAdd()">Сохр.</button></div>`;
+  body.appendChild(add);
+  list.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'tplrow';
+    row.innerHTML = `<span class="nm" onclick='tplApply(${JSON.stringify(t.state)})'>${t.name}</span><button class="del" onclick="tplDel(${i})">✕</button>`;
+    body.appendChild(row);
+  });
+}
+function tplAdd(){
+  const name = document.getElementById('tplName').value.trim();
+  if (!name) return;
+  const list = tplLoad();
+  list.push({ name, state: tplState() });
+  tplSave(list);
+  renderTplList();
+}
+function tplDel(i){
+  const list = tplLoad();
+  list.splice(i, 1);
+  tplSave(list);
+  renderTplList();
+}
+
+// Статусы поставщиков: подключённые — одной плашкой «ответили N из M» (при 20–30 поставщиках
+// их названия заняли бы весь экран); отдельными плашками — только ошибки.
+function renderStat(status){
+  const box = document.getElementById('statline');
+  if (!(me && me.full) || !status || !status.length) { box.innerHTML = ''; box.classList.remove('show'); return; }
+  const skip = status.filter(s => s.noBrands);   // штатно не участвует в подборе бренда (некоторые поставщики): серым и не в счёте «ответили»
+  const ok = status.filter(s => s.ok), bad = status.filter(s => !s.ok && !s.noBrands);
+  box.innerHTML = `<span class="st-pill" title="${esc(ok.map(s => s.supplier).join(', '))}"><span class="dot ok"></span>ответили ${ok.length} из ${ok.length + bad.length}</span>` +
+    bad.map(s => `<span class="st-pill err" title="${esc(s.error || '')}"><span class="dot err"></span>${esc(s.supplier)}: ${esc(s.error || 'ошибка')}</span>`).join('') +
+    skip.map(s => `<span class="st-pill skip" title="${esc(s.supplier)}: отдаёт наличие и цены по коду и бренду, подбор бренда по артикулу его веб-сервис не делает"><span class="dot skip"></span>${esc(s.supplier)}: не участвует в подборе бренда</span>`).join('');
+  box.classList.add('show');
+}
+
+// ---------- корзина и «Проверенные поставщики» ----------
+// Ссылка корзины: сайт поставщика строки — поиск этого артикула (если задан адрес поиска с {code})
+// или главная страница магазина. Открывается в новой вкладке, без наших логинов.
+function cartLink(r){
+  const s = suppliers.find(x => x.name === r.supplier);
+  const tpl = s && s.orderUrl;
+  if (!tpl) return '';
+  const url = tpl.includes('{code}') ? tpl.split('{code}').join(encodeURIComponent(r.code || curCode)) : tpl;
+  return `<a class="cartbtn" href="${esc(url)}" target="_blank" rel="noopener noreferrer" title="Заказать на сайте ${esc(s.name)}" aria-label="Заказать на сайте ${esc(s.name)}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.6l2.4 12.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.1"/></svg></a>`;
+}
+async function openVerified(){
+  openModal('verified');
+  const box = document.getElementById('verList');
+  try {
+    const d = await (await fetch('/api/suppliers/verified')).json();
+    box.innerHTML = (d.suppliers || []).map(s =>
+      `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer"><b>${esc(s.name)}</b><span class="u">${esc(s.url.replace(/^https?:\/\//, '').replace(/\/$/, ''))}</span></a>`).join('')
+      || '<div style="padding:12px 14px;color:var(--muted)">Список пока пуст</div>';
+  } catch (e) { box.textContent = 'Не удалось загрузить список'; }
+}
+
+// ---------- срок платного доступа: «открыт доступ на N дней» ----------
+function daysWord(n){ const a = n % 10, b = n % 100; return (a === 1 && b !== 11) ? 'день' : (a >= 2 && a <= 4 && (b < 10 || b >= 20)) ? 'дня' : 'дней'; }
+function renderAccessBar(){
+  const bar = document.getElementById('accessbar');
+  bar.className = 'accessbar';
+  const a = me && me.access;
+  if (!me || !me.approved || !a || me.role === 'admin' || (a.unlimited && a.auto)) return;   // гость, заявка, админ — без полосы
+  if (a.unlimited) { bar.innerHTML = 'Доступ к проценке открыт <b>бессрочно</b>'; bar.classList.add('show'); return; }
+  if (a.days > 0) {
+    const till = a.until ? new Date(a.until).toLocaleDateString('ru-RU') : '';
+    bar.innerHTML = `Открыт доступ на <b>${a.days} ${daysWord(a.days)}</b>${till ? ' · до ' + till + ' включительно' : ''}`;
+    bar.classList.add('show'); if (a.days <= 5) bar.classList.add('low');
+    return;
+  }
+  bar.innerHTML = 'Доступ к полной проценке закончился — сейчас видна гостевая выдача. Для продления свяжитесь с нами.';
+  bar.classList.add('show', 'off');
+}
+
+// ---------- модальные окна ----------
+function openModal(which){
+  document.getElementById('ov-' + which).classList.add('open');
+  if (which === 'auth') { resetAuthView(); authTab('login'); document.getElementById('aErr').style.display = 'none'; }
+  if (which === 'addSup') { supMode('api'); document.getElementById('mErr').style.display = 'none'; }
+}
+// closeModal('addSup') — закрыть одно окно (форму поставщика поверх списка); без аргумента — все
+function closeModal(which){
+  if (which) document.getElementById('ov-' + which).classList.remove('open');
+  else document.querySelectorAll('.overlay').forEach(o => o.classList.remove('open'));
+  resetAuthView(); hidePasswords();
+}
+
+// ---------- массовая проценка: файл артикулов → один отчёт ----------
+let bulkItems = [], bulkId = '', bulkTimer = null;
+function bulkOpen(){
+  bulkItems = []; bulkId = ''; clearInterval(bulkTimer);
+  ['bulkStep2','bulkStep3','bulkStep4'].forEach(i => document.getElementById(i).style.display = 'none');
+  document.getElementById('bulkStep1').style.display = '';
+  document.getElementById('bulkFile').value = '';
+  document.getElementById('bulkErr').style.display = 'none';
+  openModal('bulk');
+}
+async function bulkParse(){
+  const f = document.getElementById('bulkFile').files[0];
+  const err = document.getElementById('bulkErr');
+  err.style.display = 'none';
+  if (!f) { err.textContent = 'Выберите файл'; err.style.display = ''; return; }
+  document.getElementById('bulkParseBtn').disabled = true;
+  try {
+    const buf = new Uint8Array(await f.arrayBuffer());
+    const r = await fetch('/api/bulk/parse?name=' + encodeURIComponent(f.name),
+      { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: buf });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Ошибка ' + r.status);
+    bulkItems = d.items;
+    document.getElementById('bulkStep1').style.display = 'none';
+    if (d.need.length) {   // сначала уточнение бренда — потом счёт (решение директора)
+      document.getElementById('bulkNeed').innerHTML = d.need.map(n => {
+        const opts = n.candidates.length
+          ? n.candidates.map(c => `<option value="${esc(c.brand)}">${esc(c.brand)}${c.name ? ' — ' + esc(c.name.slice(0, 40)) : ''} (у ${c.suppliers} поставщ.)</option>`).join('')
+          : '<option value="">— бренд не найден, пропустить —</option>';
+        return `<div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid #1d3450">
+          <b style="min-width:130px">${esc(n.code)}</b><select style="flex:1" data-i="${n.i}">${opts}</select></div>`;
+      }).join('');
+      document.getElementById('bulkOkCount').textContent =
+        `Позиций с брендом из файла: ${bulkItems.length - d.need.length} из ${bulkItems.length}.`;
+      document.getElementById('bulkStep2').style.display = '';
+    } else bulkBegin();
+  } catch (e) { err.textContent = e.message; err.style.display = ''; }
+  finally { document.getElementById('bulkParseBtn').disabled = false; }
+}
+async function bulkBegin(){
+  for (const sel of document.querySelectorAll('#bulkNeed select'))
+    bulkItems[+sel.dataset.i].brand = sel.value;
+  const items = bulkItems.filter(x => x.brand);
+  if (!items.length) return alert('Нет позиций с брендом — выберите бренд или загрузите другой файл');
+  try {
+    const r = await fetch('/api/bulk/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items }) });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Ошибка ' + r.status);
+    bulkId = d.id;
+    document.getElementById('bulkStep2').style.display = 'none';
+    document.getElementById('bulkStep3').style.display = '';
+    clearInterval(bulkTimer);
+    bulkPoll(); bulkTimer = setInterval(bulkPoll, 2500);
+  } catch (e) { alert(e.message); }
+}
+async function bulkPoll(){
+  let d;
+  try {
+    const r = await fetch('/api/bulk/status?id=' + bulkId);
+    if (!r.ok) throw 0;
+    d = await r.json();
+  } catch (e) { clearInterval(bulkTimer); return; }
+  document.getElementById('bulkProgText').textContent = `Готово ${d.done} из ${d.total}`;
+  document.getElementById('bulkBar').style.width = Math.round(100 * d.done / Math.max(1, d.total)) + '%';
+  if (d.finished) { clearInterval(bulkTimer); bulkResults(d.rows); }
+}
+function bulkResults(rows){
+  document.getElementById('bulkStep3').style.display = 'none';
+  document.getElementById('bulkStep4').style.display = '';
+  const ok = rows.filter(x => x.ok);
+  const total = ok.reduce((s, x) => s + (x.best ? x.best.price : 0), 0);
+  document.getElementById('bulkSum').innerHTML =
+    `Позиций: ${rows.length}, найдено: ${ok.length}. <b>Итого по минимальным ценам: ${total.toLocaleString('ru-RU')} ₽</b>`;
+  document.getElementById('bulkResTbl').innerHTML =
+    `<thead><tr><th>Артикул</th><th>Бренд</th><th>Лучшая цена</th><th>Поставщик</th><th>Наличие</th><th>Срок</th></tr></thead><tbody>` +
+    rows.map(x => !x.ok
+      ? `<tr><td>${esc(x.code)}</td><td>${esc(x.brand)}</td><td colspan="4" style="color:#ff9d9d">${esc(x.error || 'не найдено')}</td></tr>`
+      : `<tr><td>${esc(x.code)}</td><td>${esc(x.brand)}</td><td class="price">${x.best.price.toLocaleString('ru-RU')} ₽</td><td>${esc(x.best.supplier)}</td><td>${x.best.amount ?? '—'}</td><td>${x.best.term != null ? x.best.term + ' дн' : '—'}</td></tr>`).join('') +
+    `</tbody>`;
+  document.getElementById('bulkCsv').href = '/api/bulk/report?id=' + bulkId + '&format=csv';
+  document.getElementById('bulkXlsx').href = '/api/bulk/report?id=' + bulkId + '&format=xlsx';
+}
+
+// ---------- «глазок» у полей пароля ----------
+const EYE_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6C3.9 8.3 2 12 2 12s3.5 7 10 7c1.6 0 3-.4 4.3-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+function addPasswordEyes(root){
+  (root || document).querySelectorAll('input[type="password"]:not([data-eye])').forEach(inp => {
+    inp.dataset.eye = '1';
+    const wrap = document.createElement('span');
+    wrap.className = 'pw';
+    inp.parentNode.insertBefore(wrap, inp);
+    wrap.appendChild(inp);
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'pw-eye';
+    b.setAttribute('aria-label', 'Показать пароль'); b.setAttribute('aria-pressed', 'false'); b.title = 'Показать пароль';
+    b.innerHTML = EYE_ON;
+    b.onclick = () => {
+      const show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      b.setAttribute('aria-pressed', String(show));
+      b.title = show ? 'Скрыть пароль' : 'Показать пароль';
+      b.setAttribute('aria-label', b.title);
+      b.innerHTML = show ? EYE_OFF : EYE_ON;
+      inp.focus();
+    };
+    wrap.appendChild(b);
+  });
+}
+// при закрытии окна пароли снова скрываются
+function hidePasswords(){
+  document.querySelectorAll('input[data-eye]').forEach(inp => {
+    inp.type = 'password';
+    const b = inp.parentNode.querySelector('.pw-eye');
+    if (b) { b.setAttribute('aria-pressed', 'false'); b.title = 'Показать пароль'; b.setAttribute('aria-label', b.title); b.innerHTML = EYE_ON; }
+  });
+}
+
+addPasswordEyes();
+loadMe();
+loadSups();
+
+// переход с главной страницы: /poisk?code=АРТИКУЛ → сразу ищем
+(() => {
+  const code = new URLSearchParams(location.search).get('code');
+  if (code) { document.getElementById('q').value = code; doSearch(); }
+})();
+</script>
+</body>
+</html>

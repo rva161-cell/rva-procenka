@@ -1,0 +1,34 @@
+[Unit]
+Description=RVA — почтовый конвейер: письма → задачи органайзера
+After=network-online.target rva-procenka.service
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Service]
+User=rva
+Group=rva
+WorkingDirectory=/opt/rva/procenka
+Environment=HOME=/opt/rva
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/rva/bot/venv/bin/python -u mail_bot.py
+Restart=on-failure
+RestartSec=5
+# --- песочница: служба видит систему только для чтения, писать может только в /opt/rva ---
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/opt/rva
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RestrictRealtime=yes
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

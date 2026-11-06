@@ -1,0 +1,3 @@
+# RVA: пользователю rva можно перезапускать ТОЛЬКО службы RVA, без пароля.
+# Устанавливается как /etc/sudoers.d/rva-vps (проверка: visudo -cf).
+rva ALL=(root) NOPASSWD: /usr/bin/systemctl restart rva-procenka.service, /usr/bin/systemctl restart rva-max-bot.service, /usr/bin/systemctl restart rva-mail-api.service, /usr/bin/systemctl restart rva-mail-bot.service, /usr/bin/systemctl restart rva-stt.service
