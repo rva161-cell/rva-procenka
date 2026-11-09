@@ -1130,6 +1130,91 @@ const sup04 = {
   }
 };
 
+// --- Поставщик SOAP (по артикулу и бренду, с разбивкой по складам), SOAP (docs/Автотрейд_API_документация.txt) ---
+// Ключ API (auth_key, 32 символа — выдаётся после заявки на sup16.example) идёт в SOAP-заголовке
+// каждого запроса. Один метод getItemsByQuery покрывает и подбор бренда (по артикулу), и выдачу
+// с ценами/складами. ГРАБЛИ: их сервер читает параметры ПОЗИЦИОННО — порядок полей строго как
+// в документации (иначе «tag mismatch»); XML-декларацию в конверте не слать; каждую позицию их
+// сервис разбивает по складам (stocks) — строка выдачи = склад.
+const SUP16_BASE = process.env.SUP16_API_URL || "https://sup16.example";
+function sup16Val(block, tag) {
+  const m = block.match(new RegExp("<" + tag + "[^>]*>([\\s\\S]*?)</" + tag + ">"));
+  return m ? m[1].trim() : "";
+}
+function sup16Items(text) {   // блоки <item xsi:type="ns1:ArticlesInfoNew"> с балансом вложенных <item> (внутри — stocks по складам)
+  const marker = '<item xsi:type="ns1:ArticlesInfoNew">';
+  const blocks = [];
+  let pos = 0;
+  while (true) {
+    const s = text.indexOf(marker, pos);
+    if (s < 0) break;
+    let depth = 1, i = s + marker.length, end = text.length;
+    const re = /<\/??item\b[^>]*>/g;
+    re.lastIndex = i;
+    let m;
+    while ((m = re.exec(text))) {
+      if (m[0].startsWith("</")) { depth--; if (depth === 0) { end = m.index + m[0].length; break; } }
+      else depth++;
+    }
+    blocks.push(text.slice(s, end));
+    pos = end;
+  }
+  return blocks;
+}
+async function sup16Call(sup, action, inner) {
+  const body = `<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="API" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><SOAP-ENV:Header><auth_key>${sup15Esc(sup.apiKey)}</auth_key></SOAP-ENV:Header><SOAP-ENV:Body><ns1:${action}>${inner}</ns1:${action}></SOAP-ENV:Body></SOAP-ENV:Envelope>`;
+  return fetchJSON(`${SUP16_BASE}/?soap`, { "Content-Type": "text/xml; charset=utf-8" }, "POST_RAW", body);
+}
+const sup16 = {
+  async brands(sup, code) {   // бренды из карточек поиска: все совпадения артикула
+    const r = await sup16Call(sup, "getItemsByQuery",
+      `<q xsi:type="xsd:string">${omEsc(code)}</q xsi:type>` +
+      `<strict xsi:type="xsd:int">0</strict>` +
+      `<page xsi:type="xsd:int">1</page><limit xsi:type="xsd:int">100</limit>` +
+      `<cross xsi:type="xsd:int">1</cross><replace xsi:type="xsd:int">0</replace>` +
+      `<discount xsi:type="xsd:int">1</discount><related xsi:type="xsd:int">0</related>` +
+      `<component xsi:type="xsd:int">0</component>`);
+    if (r.status !== 200) throw new Error("Поставщик: сервис не ответил (HTTP " + r.status + ")");
+    const rows = sup16Items(r.text || "");
+    const seen = new Map();
+    return rows.map(b => ({ code: sup16Val(b, "article"), brand: sup16Val(b, "brand_name"), name: sup16Val(b, "name"), pid: "" }))
+      .filter(r => r.brand && !seen.has(brandKey(r.brand)) && seen.set(brandKey(r.brand), 1));
+  },
+  async search(sup, code, brandInfo, crosses) {
+    const r = await sup16Call(sup, "getItemsByQuery",
+      `<q xsi:type="xsd:string">${omEsc(brandInfo.code || code)}</q xsi:type>` +
+      `<strict xsi:type="xsd:int">${crosses ? 0 : 1}</strict>` +
+      `<page xsi:type="xsd:int">1</page><limit xsi:type="xsd:int">100</limit>` +
+      `<cross xsi:type="xsd:int">${crosses ? 1 : 0}</cross><replace xsi:type="xsd:int">0</replace>` +
+      `<discount xsi:type="xsd:int">1</discount><related xsi:type="xsd:int">0</related>` +
+      `<component xsi:type="xsd:int">0</component>` +
+      `<with_stocks_and_prices xsi:type="xsd:int">1</with_stocks_and_prices>` +
+      `<with_delivery xsi:type="xsd:int">1</with_delivery>`);
+    if (r.status !== 200) throw new Error("Поставщик: сервис не ответил (HTTP " + r.status + ")");
+    const want = brandKey(brandInfo.brand || ""), wantCode = normCode(brandInfo.code || code);
+    const rows = [];
+    for (const blk of sup16Items(r.text || "")) {
+      const brand = sup16Val(blk, "brand_name") || brandInfo.brand || "";
+      const article = sup16Val(blk, "article") || code;
+      const price = parseFloat(sup16Val(blk, "price")) || 0;
+      const stocks = (blk.match(/<stocks[^>]*>([\s\S]*?)<\/stocks>/) || ["", ""])[1];
+      const list = stocks.match(/<item[^>]*>([\s\S]*?)<\/item>/g) || [null];   // строки по складам; без складов — одна строка
+      for (const sb of list) {
+        const g = tag => sb ? sup16Val(sb, tag) : "";
+        const qu = parseInt(g("quantity_unpacked")) || 0;
+        const qp = parseInt(g("quantity_packed")) || 0;
+        const dp = parseInt(g("delivery_period")) || 0;
+        rows.push({ supplier: sup.name, brand, code: article, name: sup16Val(blk, "name").slice(0, 120),
+          price, amount: qu + qp, term: dp || null,
+          warehouse: [sup16Val(sb, "name"), sup16Val(sb, "legend")].filter(Boolean).join(" · ") || "",
+          dealer: false, ret: true,
+          isCross: brandKey(brand) !== want || normCode(article) !== wantCode });
+      }
+    }
+    return rows.filter(r => r.price > 0 && (crosses || !r.isCross));
+  }
+};
+
 // --- Поставщик SOAP v2 (описание и адрес сервиса — в записи поставщика) ---
 // Два сервиса из их набора: Security2 (вход по логину/паролю кабинета → HashSession) и PartsRemains2
 // («Остатки на складах» — цены, количества, склады, бренды-замены). Каталог (Search2) для проценки
@@ -1708,10 +1793,10 @@ const sup12 = {
   }
 };
 
-const ADAPTERS = { sup01, "sup01web": sup01Web, sup02, sup03, demo, pricelist, sup04, sup05, browser, sup06, sup07, sup08, sup09, sup10, sup11, sup12, sup15 };
+const ADAPTERS = { sup01, "sup01web": sup01Web, sup02, sup03, demo, pricelist, sup04, sup05, browser, sup06, sup07, sup08, sup09, sup10, sup11, sup12, sup15, sup16 };
 function adapterOf(sup) { return ADAPTERS[sup.adapter] || null; }
 // ключ не нужен сайт-адаптерам, демо и прайсам; sup10 — логин+пароль (как Поставщик)
-const NO_KEY_NEEDED = s => s === "demo" || s === "sup01web" || s === "pricelist" || s === "sup04" || s === "browser" || s === "sup06" || s === "sup10" || s === "sup11" || s === "sup12" || s === "sup15";  // у части адаптеров логин+пароль вместо ключа
+const NO_KEY_NEEDED = s => s === "demo" || s === "sup01web" || s === "pricelist" || s === "sup04" || s === "browser" || s === "sup06" || s === "sup10" || s === "sup11" || s === "sup12" || s === "sup15" || s === "sup16";  // у части адаптеров логин+пароль вместо ключа
 
 // ---------- органайзер: API задач (только 5-й уровень, раздел 8 ТЗ) ----------
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/, TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -2691,6 +2776,7 @@ const server = http.createServer(async (req, res) => {
         else if (site.includes("sup11")) adapter = "sup11";
         else if (site.includes("sup12")) adapter = "sup12";   // поставщики общей платформы SearchService
         else if (site.includes("sup15")) adapter = "sup15";   // SOAP v2: вход логин/пароль → остатки с ценами
+        else if (site.includes("sup16")) adapter = "sup16";   // SOAP: поиск по артикулу и бренду, строки по складам
         else adapter = "none";
       }
       list.push({ id: crypto.randomUUID(), name, site, login: b.login || "", password: b.password || "",
